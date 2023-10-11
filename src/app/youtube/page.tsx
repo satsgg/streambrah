@@ -1,19 +1,75 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
+import { Pool } from "../Pool";
+import { Event as NostrEvent, utils } from "nostr-tools";
+import { parseZapRequest } from "@/utils/nostr";
+import { parseVideoId } from "@/utils/util";
+
+// TODO:
+// same video back to back fails (state update doesn't trigger rerender if same value for primitives)
+//   can make nowPlaying be an object with additional details like pubkey of zapper
+// better video height width, center it?
+// placeholder square when no video playing
 
 export default function YouTubePlayer() {
-  // const [nowPlaying, setNowPlaying] = useState<string | null>("JTBJ3tW2Lr0");
-  const [nowPlaying, setNowPlaying] = useState<string | null>("4ASKMcdCc3g");
-  // const [queue, setQueue] = useState<string[]>(["xzpndHtdl9A", "2g811Eo7K8U"]);
-  const [queue, setQueue] = useState<string[]>(["xzpndHtdl9A", "4ASKMcdCc3g"]);
+  const [notes, setNotes] = useState<NostrEvent[]>([]);
+  // const [nowPlaying, setNowPlaying] = useState<string | null>("4ASKMcdCc3g");
+  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  const [queue, setQueue] = useState<string[]>([]);
+  // const [queue, setQueue] = useState<string[]>(["4ASKMcdCc3g", "4ASKMcdCc3g"]);
+
+  const searchParams = useSearchParams();
+  const pubkey = searchParams.get("pubkey");
+  const relays = searchParams.getAll("relay");
+  const now = useRef(Math.floor(Date.now() / 1000));
+
+  useEffect(() => {
+    console.log("subscribing to relays", relays);
+    let sub = Pool.sub(relays, [
+      {
+        kinds: [9735],
+        "#p": [pubkey || ""],
+        since: now.current,
+      },
+    ]);
+
+    sub.on("event", (event: NostrEvent) => {
+      console.log("event", event);
+      setNotes((prev) => {
+        return utils.insertEventIntoDescendingList(prev, event);
+      });
+    });
+
+    return () => {
+      Pool.close(relays);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (notes.length == 0 && !notes[0]) return;
+
+    const zap = parseZapRequest(notes[0]);
+    if (!zap) return;
+
+    const videoId = parseVideoId(zap.content);
+    if (!videoId) return;
+
+    setQueue((prev) => {
+      return [...prev, videoId];
+    });
+  }, [notes]);
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
+    console.log("player ready");
     event.target.playVideo();
   };
 
   const startNextVideo = () => {
-    if (!queue) {
+    console.log("start next video");
+    if (queue.length === 0) {
+      console.log("empty queue");
       setNowPlaying(null);
       return;
     }
@@ -24,13 +80,24 @@ export default function YouTubePlayer() {
     });
   };
 
+  useEffect(() => {
+    console.log("queue update", queue);
+    if (nowPlaying) return;
+    startNextVideo();
+  }, [queue]);
+
+  useEffect(() => {
+    console.log("now playing", nowPlaying);
+  }, [nowPlaying]);
+
   const opts = {
     height: "390",
     width: "640",
     playerVars: {
-      // https://developers.google.com/youtube/player_parameters
       autoplay: 1,
       end: 300,
+      // end: 10,
+      controls: 0,
     },
   };
 
@@ -41,9 +108,18 @@ export default function YouTubePlayer() {
           videoId={nowPlaying}
           opts={opts}
           onReady={onPlayerReady}
-          onEnd={() => startNextVideo()}
+          onEnd={() => {
+            console.log("on end");
+            startNextVideo();
+          }}
+          onError={() => {
+            console.log("on error");
+            startNextVideo();
+          }}
+          // onStateChange={(event) => console.log("player event", event)}
         />
       )}
+      <div></div>
     </>
   );
 }
