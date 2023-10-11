@@ -17,8 +17,8 @@ export default function YouTubePlayer() {
   const [notes, setNotes] = useState<NostrEvent[]>([]);
   // const [nowPlaying, setNowPlaying] = useState<string | null>("4ASKMcdCc3g");
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
-  const [queue, setQueue] = useState<string[]>([]);
-  // const [queue, setQueue] = useState<string[]>(["4ASKMcdCc3g", "4ASKMcdCc3g"]);
+  // const [queue, setQueue] = useState<string[]>([]);
+  const [queue, setQueue] = useState<string[]>(["4ASKMcdCc3g", "4ASKMcdCc3g"]);
 
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
@@ -91,7 +91,7 @@ export default function YouTubePlayer() {
   }, [nowPlaying]);
 
   const opts = {
-    height: "390",
+    height: "360",
     width: "640",
     playerVars: {
       autoplay: 1,
