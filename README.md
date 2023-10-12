@@ -16,7 +16,9 @@ Zap Goal
 
 Pokemon
 
-Youtube
+Youtube ✅
+
+Lightning bolts on zaps overlay
 
 ## Getting Started
 

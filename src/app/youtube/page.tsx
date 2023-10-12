@@ -8,17 +8,31 @@ import { parseZapRequest } from "@/utils/nostr";
 import { parseVideoId } from "@/utils/util";
 
 // TODO:
-// same video back to back fails (state update doesn't trigger rerender if same value for primitives)
-//   can make nowPlaying be an object with additional details like pubkey of zapper
-// better video height width, center it?
-// placeholder square when no video playing
+// configurable max play time
+// minimum sats to play/sats per second
+
+type Video = {
+  pubkey: string;
+  id: string;
+};
+
+const testVideos = [
+  {
+    pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    id: "Yaxq3iggMdM",
+  },
+  {
+    pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    id: "4ASKMcdCc3g",
+  },
+];
 
 export default function YouTubePlayer() {
   const [notes, setNotes] = useState<NostrEvent[]>([]);
-  // const [nowPlaying, setNowPlaying] = useState<string | null>("4ASKMcdCc3g");
-  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
-  // const [queue, setQueue] = useState<string[]>([]);
-  const [queue, setQueue] = useState<string[]>(["4ASKMcdCc3g", "4ASKMcdCc3g"]);
+  const [nowPlaying, setNowPlaying] = useState<Video | null>(testVideos[0]);
+  const [queue, setQueue] = useState<Video[]>([]);
+  // const [queue, setQueue] = useState<Video[]>(testVideos);
+  const [counter, setCounter] = useState(0);
 
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
@@ -56,20 +70,22 @@ export default function YouTubePlayer() {
     const videoId = parseVideoId(zap.content);
     if (!videoId) return;
 
+    const newVideo: Video = {
+      pubkey: zap.pubkey,
+      id: videoId,
+    };
+
     setQueue((prev) => {
-      return [...prev, videoId];
+      return [...prev, newVideo];
     });
   }, [notes]);
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
-    console.log("player ready");
     event.target.playVideo();
   };
 
   const startNextVideo = () => {
-    console.log("start next video");
     if (queue.length === 0) {
-      console.log("empty queue");
       setNowPlaying(null);
       return;
     }
@@ -81,13 +97,15 @@ export default function YouTubePlayer() {
   };
 
   useEffect(() => {
-    console.log("queue update", queue);
     if (nowPlaying) return;
     startNextVideo();
   }, [queue]);
 
   useEffect(() => {
-    console.log("now playing", nowPlaying);
+    console.log("now playing", nowPlaying, "queue", queue);
+    setCounter((prev) => {
+      return prev + 1;
+    });
   }, [nowPlaying]);
 
   const opts = {
@@ -96,30 +114,25 @@ export default function YouTubePlayer() {
     playerVars: {
       autoplay: 1,
       end: 300,
-      // end: 10,
+      // end: 5,
       controls: 0,
     },
   };
 
   return (
     <>
-      {nowPlaying && (
-        <YouTube
-          videoId={nowPlaying}
-          opts={opts}
-          onReady={onPlayerReady}
-          onEnd={() => {
-            console.log("on end");
-            startNextVideo();
-          }}
-          onError={() => {
-            console.log("on error");
-            startNextVideo();
-          }}
-          // onStateChange={(event) => console.log("player event", event)}
-        />
+      <YouTube
+        videoId={nowPlaying?.id}
+        opts={opts}
+        key={counter}
+        onReady={onPlayerReady}
+        onEnd={startNextVideo}
+        onError={startNextVideo}
+        // onStateChange={(event) => console.log("player event", event)}
+      />
+      {!nowPlaying && (
+        <div className="fixed top-0 left-0 z-2 h-[360px] w-[640px] bg-black"></div>
       )}
-      <div></div>
     </>
   );
 }
