@@ -25,6 +25,7 @@ const Notification = ({
 
   return (
     <div className="inline-flex min-w-0 flex-col text-white">
+      {/* <div className="inline-flex min-w-0 flex-col"> */}
       <p className="text-3xl">
         <span className="font-bold text-primary">
           {displayName(event.pubkey, profile).slice(0, 18)}
