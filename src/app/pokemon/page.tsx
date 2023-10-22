@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
+import { useSearchParams } from "next/navigation";
+import { useInputQueue } from "./useInputQueue";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -29,20 +31,29 @@ WasmBoy.ResponsiveGamepad.onInputsChange(
   }
 );
 
-let inputMap = {
-  A: "KeyX",
-  B: "KeyZ",
-  UP: "KeyW",
-  LEFT: "KeyA",
-  DOWN: "KeyS",
-  RIGHT: "KeyD",
-  START: "enter",
-  SELECT: "ShiftRight",
-  PAUSE: "space",
-};
+enum Input {
+  a = "KeyX",
+  b = "KeyZ",
+  up = "KeyW",
+  left = "KeyA",
+  down = "KeyS",
+  right = "KeyD",
+  start = "enter",
+  select = "ShiftRight",
+  pause = "space",
+}
 
 export default function Pokemon() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const searchParams = useSearchParams();
+  const pubkey = searchParams.get("pubkey");
+  const relays = searchParams.getAll("relay");
+
+  const { inputs, setInputs } = useInputQueue(pubkey, relays);
+
+  // useEffect(() => {
+  //   console.log("inputs", inputs);
+  // }, [inputs]);
 
   useEffect(() => {
     loadWasmBoy();
@@ -70,23 +81,32 @@ export default function Pokemon() {
     // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. <URL>
   };
 
-  const executeMove = (move) => {
-    if (move) {
-      console.log("executing input: " + move);
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { code: inputMap[move] })
-      );
-      setTimeout(
-        () =>
-          window.dispatchEvent(
-            new KeyboardEvent("keyup", { code: inputMap[move] })
-          ),
-        100
-      );
-    } else {
-      // console.log("Skipping move")
-    }
+  const executeMove = (input: string) => {
+    console.log("executing input: " + input);
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: input }));
+    setTimeout(
+      () => window.dispatchEvent(new KeyboardEvent("keyup", { code: input })),
+      100
+    );
   };
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setInputs((prev) => {
+        if (prev.length == 0) return [];
+        const input = Input[prev[0].input];
+        executeMove(input);
+        return prev.slice(1);
+      });
+    }, 2000);
+    console.debug("set interval", interval);
+
+    return () => {
+      console.debug("clearing interval", interval);
+      clearInterval(interval);
+    };
+  }, [isPlaying]);
 
   const handleWasmBoyIsPlayingChange = () => {
     // Set timeout is temporary fix for isPlaying() bug
@@ -94,10 +114,10 @@ export default function Pokemon() {
     // console.log("is playing change")
     setTimeout(() => {
       if (WasmBoy.isLoadedAndStarted() && WasmBoy.isPlaying()) {
-        console.log("set is playing: true");
+        console.debug("set is playing: true");
         setIsPlaying(true);
       } else {
-        console.log("set is playing: false");
+        console.debug("set is playing: false");
         setIsPlaying(false);
       }
     }, 50);
