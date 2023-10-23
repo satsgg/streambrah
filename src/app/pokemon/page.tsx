@@ -5,7 +5,7 @@ import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
 import { Virtuoso } from "react-virtuoso";
-import { Input } from "./util";
+import { Input, saveGameState } from "./util";
 import { InputDisplay } from "./input";
 
 let quickSpeed = false;
@@ -79,17 +79,26 @@ export default function Pokemon() {
 
   useEffect(() => {
     if (!isPlaying) return;
-    const interval = setInterval(() => {
+    const inputInterval = setInterval(() => {
       setInputs((prev) => {
         if (prev.length == 0) return [];
         const input = Input[prev[0].input];
+        // TODO: saveInterval isn't called twice... even with strict mode. it's still fine tho
+        // maybe should execute move outside of this
         executeMove(input);
         return prev.slice(1);
       });
     }, 2000);
 
+    const saveInterval = setInterval(async () => {
+      const saveState = await WasmBoy.saveState();
+      saveGameState(saveState);
+      WasmBoy.play();
+    }, 5000);
+
     return () => {
-      clearInterval(interval);
+      clearInterval(inputInterval);
+      clearInterval(saveInterval);
     };
   }, [isPlaying]);
 
