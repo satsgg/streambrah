@@ -1,43 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { Event as NostrEvent, utils } from "nostr-tools";
+import { Event as NostrEvent } from "nostr-tools";
 import { Pool } from "../Pool";
+import { InputAndAuthor, parseInput } from "./util";
 
-enum Input {
-  a = "KeyX",
-  b = "KeyZ",
-  up = "KeyW",
-  left = "KeyA",
-  down = "KeyS",
-  right = "KeyD",
-  start = "enter",
-  select = "ShiftRight",
-  pause = "space",
-}
-
-// could probably just store the events themselves after validating the content...
-type InputAndAuthor = {
-  input: string;
-  id: string;
-  pubkey: string;
-  amount: number;
-};
-
-const parseInput = (event: NostrEvent): InputAndAuthor | null => {
-  const parsedContent = event.content.split(" ")[0].toLowerCase();
-  if (!(parsedContent in Input)) {
-    return null;
-  }
-
-  return {
-    input: parsedContent,
-    id: event.id,
-    pubkey: event.pubkey,
-    amount: 0,
-  };
+const testInput = {
+  input: "a",
+  id: "7c15cb2fe8e8e1aa7ba92b53253facf592d0c833b163420c4e7223206c6287a8",
+  pubkey: "0bed926df26089c6869621abf8b27858dd0b61f2c3c556e84fd9c08f0f499344",
+  amount: 0,
 };
 
 export const useInputQueue = (pubkey: string | null, relays: string[]) => {
-  const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
+  // const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
+  const [inputs, setInputs] = useState<InputAndAuthor[]>(
+    Array(100).fill(testInput)
+  );
   const now = useRef(Math.floor(Date.now() / 1000));
 
   useEffect(() => {
@@ -63,7 +40,7 @@ export const useInputQueue = (pubkey: string | null, relays: string[]) => {
     });
 
     return () => {
-      setInputs([]);
+      // setInputs([]);
       Pool.close(relays);
     };
   }, []);

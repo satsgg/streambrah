@@ -1,6 +1,18 @@
 import { UserMetadata } from "@/app/store";
 import { nip19, Event as NostrEvent } from "nostr-tools";
 
+export const DEFAULT_RELAYS = [
+  "wss://relay.damus.io",
+  "wss://nostr.fmt.wiz.biz",
+  "wss://nostr.oxtr.dev",
+  "wss://arc1.arcadelabs.co",
+  "wss://relay.nostr.ch",
+  "wss://eden.nostr.land",
+  "wss://nos.lol",
+  "wss://relay.snort.social",
+  "wss://relay.current.fyi",
+];
+
 export const validHexKey = (hexKey: string) => {
   try {
     if (!hexKey.match(/^[a-f0-9]{64}$/)) {
@@ -44,8 +56,10 @@ export const parseZapRequest = (note: NostrEvent): NostrEvent | null => {
   const zapRequest = note.tags.find((t) => t[0] == "description");
   if (zapRequest && zapRequest[1]) {
     try {
-      const requestJson = JSON.parse(zapRequest[1]);
-      if (!requestJson.tags[1] && requestJson.tags[1] === "amount") return null;
+      const requestJson: NostrEvent = JSON.parse(zapRequest[1]);
+      // TODO: Should check ln invoice for amount
+      const amount = requestJson.tags.find(([t, v]) => t === "amount" && v);
+      if (!amount) return null;
       return requestJson;
     } catch (e) {
       console.error("Invalid zap request event");
@@ -62,6 +76,8 @@ export const displayName = (
     return profile.name;
   } else if (profile?.display_name) {
     return profile.display_name;
+  } else if (profile?.nip05) {
+    return profile.nip05.substring(0, profile.nip05.indexOf("@"));
   } else {
     return nip19.npubEncode(pubkey);
   }

@@ -1,13 +1,14 @@
-import { UserMetadata, UserMetadataStore, db } from "../store";
+import { UserMetadata, UserMetadataStore, db } from "./store";
 import { useLiveQuery } from "dexie-react-hooks";
 import { nip19, Event as NostrEvent } from "nostr-tools";
-import { Pool } from "../Pool";
+import { Pool } from "./Pool";
 
 // refetch profiles after 1 day
 const profileCacheDuration = 86400;
 
 const callback = async (event: NostrEvent) => {
   const profile: UserMetadata = JSON.parse(event.content);
+  console.log("fetched profile", profile);
   const profileToStore: UserMetadataStore = {
     ...profile,
     pubkey: event.pubkey,

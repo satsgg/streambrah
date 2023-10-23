@@ -5,7 +5,7 @@ import { Pool } from "../Pool";
 import { useSearchParams } from "next/navigation";
 import { displayName, parseZapRequest } from "@/utils/nostr";
 import { fmtMsg } from "@/utils/util";
-import { useProfile } from "./useProfile";
+import { useProfile } from "../useProfile";
 
 const Notification = ({
   event,
@@ -27,12 +27,13 @@ const Notification = ({
     <div className="inline-flex min-w-0 flex-col text-white">
       {/* <div className="inline-flex min-w-0 flex-col"> */}
       <p className="text-3xl">
-        <span className="font-bold text-primary">
+        <span className="font-bold text-primary whitespace-nowrap">
           {displayName(event.pubkey, profile).slice(0, 18)}
+          {/* {event.pubkey.slice(0, 18)} */}
         </span>{" "}
         zapped {getAmount(event)} sats!
       </p>
-      <p className="break-words text-2xl">{fmtMsg(event.content)}</p>
+      <p className="break-all text-2xl">{fmtMsg(event.content)}</p>
     </div>
   );
 };
@@ -56,14 +57,16 @@ export default function Notifications() {
         // since: now.current,
 
         // test with old zaps
-        since: now.current - 1000 * 60 * 60 * 24,
-        limit: 5,
+        since: now.current - 1000 * 60 * 60 * 1,
+        // limit: 25,
       },
     ]);
 
     sub.on("event", (event: NostrEvent) => {
+      const zapRequest = parseZapRequest(event);
+      if (!zapRequest) return;
       setNotes((prev) => {
-        return utils.insertEventIntoAscendingList(prev, event);
+        return utils.insertEventIntoAscendingList(prev, zapRequest);
       });
     });
 
@@ -74,12 +77,9 @@ export default function Notifications() {
 
   useEffect(() => {
     if (notes.length > 0 && notes[0]) {
-      const noti = parseZapRequest(notes[0]);
-      if (noti) {
-        setNotiQueue((prev) => {
-          return [...prev, noti];
-        });
-      }
+      setNotiQueue((prev) => {
+        return [...prev, notes[0]];
+      });
       if (!notiVisible) {
         setNotiVisible(true);
       }
@@ -102,7 +102,7 @@ export default function Notifications() {
     <main className="flex min-h-screen w-full justify-center items-center overflow-y-auto">
       {notiVisible && (
         <div
-          className="flex animate-alert justify-center items-center sm:w-2/3 lg:w-1/3"
+          className="flex animate-alert justify-center items-center sm:w-3/4 lg:w-1/2"
           onAnimationStart={() => {
             console.debug("queue", notiQueue);
             console.debug("now display", noti);

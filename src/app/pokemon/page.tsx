@@ -4,6 +4,9 @@ import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
+import { Virtuoso } from "react-virtuoso";
+import { Input } from "./util";
+import { InputDisplay } from "./input";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -31,18 +34,6 @@ WasmBoy.ResponsiveGamepad.onInputsChange(
   }
 );
 
-enum Input {
-  a = "KeyX",
-  b = "KeyZ",
-  up = "KeyW",
-  left = "KeyA",
-  down = "KeyS",
-  right = "KeyD",
-  start = "enter",
-  select = "ShiftRight",
-  pause = "space",
-}
-
 export default function Pokemon() {
   const [isPlaying, setIsPlaying] = useState(false);
   const searchParams = useSearchParams();
@@ -50,10 +41,6 @@ export default function Pokemon() {
   const relays = searchParams.getAll("relay");
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
-
-  // useEffect(() => {
-  //   console.log("inputs", inputs);
-  // }, [inputs]);
 
   useEffect(() => {
     loadWasmBoy();
@@ -100,10 +87,8 @@ export default function Pokemon() {
         return prev.slice(1);
       });
     }, 2000);
-    console.debug("set interval", interval);
 
     return () => {
-      console.debug("clearing interval", interval);
       clearInterval(interval);
     };
   }, [isPlaying]);
@@ -128,6 +113,18 @@ export default function Pokemon() {
       <div className="flex h-full justify-center">
         <div className="flex justify-center h-full">
           <canvas width="100%" height="100%" id="wasmboy-canvas" />
+        </div>
+        <div className="h-full w-full nowrap text-white pt-32">
+          <Virtuoso
+            data={inputs}
+            className="no-scrollbar"
+            followOutput={"smooth"}
+            itemContent={(index, input) => {
+              return (
+                <InputDisplay index={index} input={input} relays={relays} />
+              );
+            }}
+          />
         </div>
       </div>
     </div>
