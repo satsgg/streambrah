@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
 import { Virtuoso } from "react-virtuoso";
-import { Input, saveGameState } from "./util";
+import { Input, jsonToState, stateToJson } from "./util";
 import { InputDisplay } from "./input";
 
 let quickSpeed = false;
@@ -39,6 +39,9 @@ export default function Pokemon() {
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
   const relays = searchParams.getAll("relay");
+  const [stateDownloadUrl, setStateDownloadUrl] = useState<string>("");
+  const inputStateFile = useRef<HTMLInputElement | null>(null);
+  const saveStateFile = useRef<HTMLAnchorElement | null>(null);
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
 
@@ -91,10 +94,11 @@ export default function Pokemon() {
     }, 2000);
 
     const saveInterval = setInterval(async () => {
-      const saveState = await WasmBoy.saveState();
-      saveGameState(saveState);
-      WasmBoy.play();
-    }, 5000);
+      // TODO: Fix auto save to local storage
+      // const saveState = await WasmBoy.saveState();
+      // saveGameState(saveState);
+      // WasmBoy.play();
+    }, 3000);
 
     return () => {
       clearInterval(inputInterval);
@@ -117,11 +121,104 @@ export default function Pokemon() {
     }, 50);
   };
 
+  // TODO: Fix load auto save from local storage
+  // const loadSaveState = async () => {
+  //   // pick which save state to load?
+  //   // still can't save externally.
+  //   const jsonSaveState = localStorage.getItem("autoSave");
+  //   if (!jsonSaveState) return;
+  //   const saveState = convertJsonSaveState(jsonSaveState);
+  //   await WasmBoy.loadState(saveState);
+  // };
+
+  const downloadLocalState = async (
+    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    event.preventDefault();
+    // make sure paused already?
+    if (!WasmBoy.isLoadedAndStarted()) {
+      console.error("Cannot save. WasmBoy is not started");
+      return;
+    }
+    const state = await WasmBoy.saveState();
+    const jsonState = stateToJson(state);
+    // output = JSON.stringify({states: this.state.data},
+    //   null, 4); // null, 4? helpful for us?
+
+    const blob = new Blob([jsonState]);
+    const fileDownloadUrl = URL.createObjectURL(blob);
+    setStateDownloadUrl(fileDownloadUrl);
+  };
+
+  useEffect(() => {
+    if (stateDownloadUrl === "") return;
+    saveStateFile.current?.click();
+    URL.revokeObjectURL(stateDownloadUrl);
+  }, [stateDownloadUrl]);
+
+  const loadLocalState = () => {
+    inputStateFile.current?.click();
+  };
+
+  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      if (!WasmBoy.isLoadedAndStarted()) {
+        // TODO: Should require user to load and start WasmBoy before displaying
+        // any options
+        // maybe just a big start button or something they have to click first
+        console.error("Cannot load state. WasmBoy isn't started");
+        return;
+      }
+      if (!event.target.files || !event.target.files[0]) {
+        console.error("no file available");
+        return;
+      }
+      const fileObj = event.target.files[0];
+      console.debug("loaded file", fileObj);
+      const reader = new FileReader();
+
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        if (!e.target) {
+          console.error("Failed to load state file");
+          return;
+        }
+        const state = jsonToState(e.target.result);
+        await WasmBoy.loadState(state);
+      };
+      reader.readAsText(fileObj);
+    }, 50);
+  };
+
   return (
     <div className="fixed w-full h-full justify-center">
       <div className="flex h-full justify-center">
-        <div className="flex justify-center h-full">
+        <div className="flex h-full">
           <canvas width="100%" height="100%" id="wasmboy-canvas" />
+          {!isPlaying && (
+            <div className="fixed flex flex-col gap-y-2 bg-slate-800 text-white">
+              <button onClick={() => loadLocalState()}>
+                Load local state file
+              </button>
+              <button onClick={async (e) => downloadLocalState(e)}>
+                Save state file locally
+              </button>
+              <a
+                download="pokemonSaveState.json"
+                href={stateDownloadUrl}
+                ref={saveStateFile}
+                className="hidden"
+              />
+              <input
+                type="file"
+                id="file"
+                accept=".json"
+                multiple={false}
+                ref={inputStateFile}
+                onChange={handleFileInput}
+                className="hidden"
+              />
+            </div>
+          )}
         </div>
         <div className="h-full w-full nowrap text-white pt-32">
           <Virtuoso
