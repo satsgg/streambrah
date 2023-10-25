@@ -1,35 +1,44 @@
 "use client";
-import { useEffect, useRef } from "react";
-
-const testVideos = [
-  {
-    pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
-    id: "Yaxq3iggMdM",
-  },
-  {
-    pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
-    id: "4ASKMcdCc3g",
-  },
-];
+import { useRef, useState } from "react";
+import { testVideos } from "../util";
 
 export default function Dock() {
   const bc = useRef(new BroadcastChannel("youtube-dock"));
+  const [currentTestVideo, setCurrentTestVideo] = useState(0);
 
   const playTestVideo = () => {
     bc.current.postMessage({
-      type: "playTestVideo",
-      value: testVideos[0],
+      type: "addTestVideo",
+      value: testVideos[currentTestVideo],
+    });
+    if (currentTestVideo + 1 == testVideos.length) {
+      setCurrentTestVideo(0);
+      return;
+    }
+    setCurrentTestVideo(currentTestVideo + 1);
+  };
+
+  const skip = () => {
+    bc.current.postMessage({
+      type: "skip",
+      value: null,
     });
   };
 
   // TODO:
-  // - skip video
   // - show now playing?
   // - pause?
+  // - set minimum zap cost
+  // - set cost per second?
 
   return (
-    <div>
-      <button onClick={playTestVideo}>Play test video</button>
+    <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white">
+      <button className="rounded bg-gray-600 px-2 py-1" onClick={playTestVideo}>
+        Add test video
+      </button>
+      <button className="rounded bg-gray-600 px-2 py-1" onClick={skip}>
+        Skip
+      </button>
     </div>
   );
 }
