@@ -17,14 +17,24 @@ export default function PokemonDock() {
     bc.current.postMessage(fullInput);
   };
 
+  // TODO:
+  // Input execution timer option
+  // save state, load state
+
   return (
     <div className="w-full h-screen bg-gray-700 text-white text-sm whitespace-nowrap p-2">
       <div className="flex flex-wrap gap-x-2 gap-y-2">
         <button
           className="bg-gray-500 border rounded px-2 py-1"
+          onClick={() => sendInput("play")}
+        >
+          Play
+        </button>
+        <button
+          className="bg-gray-500 border rounded px-2 py-1"
           onClick={() => sendInput("pause")}
         >
-          Toggle pause
+          Pause
         </button>
         <button
           className="bg-gray-500 border rounded px-2 py-1"

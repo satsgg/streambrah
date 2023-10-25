@@ -53,7 +53,15 @@ export default function Pokemon() {
 
   useEffect(() => {
     bcDock.current.onmessage = (event) => {
-      console.debug("adding input", event.data);
+      if (event.data.input === "play") {
+        WasmBoy.play();
+        return;
+      }
+      if (event.data.input === "pause") {
+        WasmBoy.pause();
+        return;
+      }
+      console.log("adding input", event.data);
       setInputs((prev) => {
         return [...prev, event.data];
       });
