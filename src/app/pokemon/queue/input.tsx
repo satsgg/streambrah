@@ -10,6 +10,7 @@ export const InputDisplay = ({
   relays: string[];
 }) => {
   const { profile, isLoading } = useProfile(input.pubkey, relays);
+  console.debug("input", input);
 
   return (
     <div className="flex justify-between text-white px-4 py-1 text-xl font-semibold">

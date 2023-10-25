@@ -6,7 +6,7 @@ import { InputAndAuthor } from "../util";
 import { useSearchParams } from "next/navigation";
 
 export default function Queue() {
-  const [events, setEvents] = useState<InputAndAuthor[]>([]);
+  const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
   const searchParams = useSearchParams();
   const relays = searchParams.getAll("relay");
 
@@ -14,14 +14,15 @@ export default function Queue() {
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
-      setEvents(event.data);
+      console.debug("event data received", event.data);
+      setInputs(event.data);
     };
   }, []);
 
   return (
-    <div className="flex justify-center h-screen w-full nowrap text-white">
+    <div className="h-screen w-full text-white bg-gray-400">
       <Virtuoso
-        data={events}
+        data={inputs}
         className="no-scrollbar"
         itemContent={(index, input) => {
           return <InputDisplay input={input} relays={relays} />;

@@ -43,12 +43,22 @@ export default function Pokemon() {
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
 
-  const bc = useRef(new BroadcastChannel("pokemon-inputs"));
+  const bcQueue = useRef(new BroadcastChannel("pokemon-inputs"));
+  const bcDock = useRef(new BroadcastChannel("pokemon-dock"));
 
   useEffect(() => {
     console.debug("sending inputs over channel");
-    bc.current.postMessage(inputs);
+    bcQueue.current.postMessage(inputs);
   }, [inputs]);
+
+  useEffect(() => {
+    bcDock.current.onmessage = (event) => {
+      console.debug("adding input", event.data);
+      setInputs((prev) => {
+        return [...prev, event.data];
+      });
+    };
+  }, []);
 
   useEffect(() => {
     loadWasmBoy();
