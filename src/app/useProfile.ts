@@ -2,6 +2,7 @@ import { UserMetadata, UserMetadataStore, db } from "./store";
 import { useLiveQuery } from "dexie-react-hooks";
 import { nip19, Event as NostrEvent } from "nostr-tools";
 import { Pool } from "./Pool";
+import { DEFAULT_RELAYS } from "@/utils/nostr";
 
 // refetch profiles after 1 day
 const profileCacheDuration = 86400;
@@ -51,12 +52,15 @@ export const useProfile = (pubkey: string | undefined, relays: string[]) => {
         return [ret, false];
       }
 
-      const sub = Pool.sub(relays, [
-        {
-          kinds: [0],
-          authors: [pubkey],
-        },
-      ]);
+      const sub = Pool.sub(
+        [...DEFAULT_RELAYS, ...relays],
+        [
+          {
+            kinds: [0],
+            authors: [pubkey],
+          },
+        ]
+      );
       sub.on("event", callback);
 
       return [undefined, false];
