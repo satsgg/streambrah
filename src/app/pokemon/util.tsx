@@ -9,7 +9,7 @@ export enum Input {
   right = "KeyD",
   start = "enter",
   select = "ShiftRight",
-  pause = "space",
+  // pause = "space",
 }
 
 // could probably just store the events themselves after validating the content...
