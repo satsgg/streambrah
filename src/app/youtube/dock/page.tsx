@@ -22,9 +22,13 @@ export default function Dock() {
     });
   };
 
+  // TODO:
+  // - skip video
+  // - show now playing?
+  // - pause?
+
   return (
     <div>
-      <p>dock</p>
       <button onClick={playTestVideo}>Play test video</button>
     </div>
   );

@@ -127,30 +127,34 @@ export default function YouTubePlayer() {
   }, [nowPlaying]);
 
   const opts = {
-    height: "360",
-    width: "640",
+    height: "720",
+    width: "1280",
+
     playerVars: {
       autoplay: 1,
       end: 300,
       // end: 5,
+      // might be able to force autohide off by simulating a mouse hovering...
+      // this way the video title/author could stay up
       controls: 0,
     },
   };
 
   return (
-    <>
-      <YouTube
-        videoId={nowPlaying?.id}
-        opts={opts}
-        key={counter}
-        onReady={onPlayerReady}
-        onEnd={startNextVideo}
-        onError={startNextVideo}
-        // onStateChange={(event) => console.log("player event", event)}
-      />
-      {!nowPlaying && (
-        <div className="fixed top-0 left-0 z-2 h-[360px] w-[640px] bg-black"></div>
+    <div className="flex justify-center items-center h-screen w-full ">
+      {nowPlaying ? (
+        <YouTube
+          videoId={nowPlaying?.id}
+          opts={opts}
+          key={counter}
+          onReady={onPlayerReady}
+          onEnd={startNextVideo}
+          onError={startNextVideo}
+          // onStateChange={(event) => console.log("player event", event)}
+        />
+      ) : (
+        <div className="h-[720px] w-[1280px] bg-black"></div>
       )}
-    </>
+    </div>
   );
 }
