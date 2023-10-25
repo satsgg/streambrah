@@ -163,11 +163,9 @@ export default function ConfigureNotifications() {
   const [pubkey, setPubkey] = useState(
     "npub1p0keym0jvzyudp5kyx4l3vnctrwskc0jc0z4d6z0m8qg7r6fjdzqmyvmgv"
   );
-  const [relays, setRelays] = useState<string[]>([
-    "wss://relay.damus.io",
-    "wss://eden.nostr.land",
-  ]);
+  const [relays, setRelays] = useState<string[]>(["wss://relay.damus.io"]);
   const [link, setLink] = useState<string>("");
+  const [queueLink, setQueueLink] = useState<string>("");
 
   const generateLink = () => {
     const encodedRelays = relays.map(encodeURIComponent);
@@ -182,6 +180,13 @@ export default function ConfigureNotifications() {
     )}`;
     console.log("url", url);
     setLink(url);
+
+    const queueUrl = `http://localhost:3001/pokemon/queue?relay=${encodedRelays.join(
+      "&" + "relay" + "="
+    )}`;
+
+    console.log("queueUrl", queueUrl);
+    setQueueLink(queueUrl);
   };
 
   return (
@@ -211,13 +216,15 @@ export default function ConfigureNotifications() {
           </div>
 
           <div className="flex flex-col gap-y-2">
-            <h1 className="text-lg font-semibold">Your notifications link</h1>
+            <h1 className="text-lg font-semibold">Your Pokemon link</h1>
             <span className="border rounded break-all p-1">{link}</span>
+            <h1 className="text-lg font-semibold">Your Pokemon queue link</h1>
+            <span className="border rounded break-all p-1">{queueLink}</span>
             <button
               className="capitalize bg-blue-200 align-right inline-flex items-center justify-center rounded bg-primary px-3 py-2 text-sm font-semibold shadow-md transition duration-150 ease-in-out hover:bg-primary hover:shadow-lg focus:bg-primary focus:shadow-lg focus:outline-none focus:ring-0 active:bg-primary active:shadow-lg"
               onClick={generateLink}
             >
-              generate link
+              generate links
             </button>
           </div>
         </div>

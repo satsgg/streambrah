@@ -1,6 +1,6 @@
 import { displayName } from "@/utils/nostr";
-import { useProfile } from "../useProfile";
-import { InputAndAuthor } from "./util";
+import { useProfile } from "../../useProfile";
+import { InputAndAuthor } from "../util";
 
 export const InputDisplay = ({
   index,

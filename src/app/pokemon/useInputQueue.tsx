@@ -11,10 +11,10 @@ const testInput = {
 };
 
 export const useInputQueue = (pubkey: string | null, relays: string[]) => {
-  // const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
-  const [inputs, setInputs] = useState<InputAndAuthor[]>(
-    Array(100).fill(testInput)
-  );
+  const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
+  // const [inputs, setInputs] = useState<InputAndAuthor[]>(
+  //   Array(100).fill(testInput)
+  // );
   const now = useRef(Math.floor(Date.now() / 1000));
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export const useInputQueue = (pubkey: string | null, relays: string[]) => {
     });
 
     return () => {
-      // setInputs([]);
+      setInputs([]);
       Pool.close(relays);
     };
   }, []);

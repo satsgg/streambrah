@@ -4,9 +4,7 @@ import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
-import { Virtuoso } from "react-virtuoso";
 import { Input, jsonToState, stateToJson } from "./util";
-import { InputDisplay } from "./input";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -44,6 +42,13 @@ export default function Pokemon() {
   const saveStateFile = useRef<HTMLAnchorElement | null>(null);
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
+
+  const bc = useRef(new BroadcastChannel("pokemon-inputs"));
+
+  useEffect(() => {
+    console.debug("sending inputs over channel");
+    bc.current.postMessage(inputs);
+  }, [inputs]);
 
   useEffect(() => {
     loadWasmBoy();
@@ -219,18 +224,6 @@ export default function Pokemon() {
               />
             </div>
           )}
-        </div>
-        <div className="h-full w-full nowrap text-white pt-32">
-          <Virtuoso
-            data={inputs}
-            className="no-scrollbar"
-            followOutput={"smooth"}
-            itemContent={(index, input) => {
-              return (
-                <InputDisplay index={index} input={input} relays={relays} />
-              );
-            }}
-          />
         </div>
       </div>
     </div>
