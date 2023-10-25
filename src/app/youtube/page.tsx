@@ -29,10 +29,28 @@ const testVideos = [
 
 export default function YouTubePlayer() {
   const [notes, setNotes] = useState<NostrEvent[]>([]);
-  const [nowPlaying, setNowPlaying] = useState<Video | null>(testVideos[0]);
+  const [nowPlaying, setNowPlaying] = useState<Video | null>(null);
   const [queue, setQueue] = useState<Video[]>([]);
-  // const [queue, setQueue] = useState<Video[]>(testVideos);
   const [counter, setCounter] = useState(0);
+
+  const bc = useRef(new BroadcastChannel("youtube-dock"));
+
+  useEffect(() => {
+    bc.current.onmessage = (event) => {
+      const type = event.data.type;
+      const value = event.data.value;
+      switch (type) {
+        case "playTestVideo":
+          console.log("play test video", value);
+          setQueue((prev) => {
+            return [...prev, value];
+          });
+          break;
+        default:
+          console.error("invalid event message");
+      }
+    };
+  }, []);
 
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
