@@ -23,7 +23,6 @@ export default function Queue() {
       <Virtuoso
         data={events}
         className="no-scrollbar"
-        followOutput={"smooth"}
         itemContent={(index, input) => {
           return <InputDisplay input={input} relays={relays} />;
         }}

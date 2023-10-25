@@ -16,7 +16,7 @@ export default function VideoDisplay({
   // TODO: More formatting, add zap amount
   return (
     <div className="flex justify-between text-white py-1 lg:w-1/2 items-center">
-      <div className="flex gap-1 items-center">
+      <div className="flex gap-2 items-center">
         {profile?.picture && (
           <img
             className="h-10 w-10 shrink-0 rounded-[50%]"
@@ -25,7 +25,6 @@ export default function VideoDisplay({
         )}
         <p className="w-full text-xl font-semibold">
           {fmtMsg(displayName(video.pubkey, profile), 20)}
-          {/* {fmtMsg(video.pubkey, 25)} */}
         </p>
       </div>
       <div className="flex gap-x-2 items-center">

@@ -23,11 +23,10 @@ export default function Queue() {
   }, []);
 
   return (
-    <div className="h-screen w-full nowrap text-white bg-gray-500">
+    <div className="h-screen w-full nowrap text-white">
       <Virtuoso
         data={playlist.queue}
         className="no-scrollbar"
-        followOutput={"smooth"}
         itemContent={(index, video) => {
           return <VideoDisplay video={video} relays={relays} />;
         }}
