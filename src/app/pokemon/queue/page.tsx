@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { InputDisplay } from "./input";
+import { InputDisplay } from "./inputDisplay";
 import { InputAndAuthor } from "../util";
 import { useSearchParams } from "next/navigation";
 
@@ -20,7 +20,7 @@ export default function Queue() {
   }, []);
 
   return (
-    <div className="h-screen w-full text-white bg-gray-400">
+    <div className="h-screen w-full text-white">
       <Virtuoso
         data={inputs}
         className="no-scrollbar"

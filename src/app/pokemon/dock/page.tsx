@@ -20,7 +20,7 @@ export default function PokemonDock() {
   // TODO:
   // Input execution timer option
   // save state, load state
-
+  // turbo button?
   return (
     <div className="w-full h-screen bg-gray-700 text-white text-sm whitespace-nowrap p-2">
       <div className="flex flex-wrap gap-x-2 gap-y-2">

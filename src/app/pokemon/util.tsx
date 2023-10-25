@@ -1,5 +1,6 @@
 import { Event as NostrEvent } from "nostr-tools";
 
+// TODO: Start isn't working. Need to test select too
 export enum Input {
   a = "KeyX",
   b = "KeyZ",
@@ -9,7 +10,6 @@ export enum Input {
   right = "KeyD",
   start = "enter",
   select = "ShiftRight",
-  // pause = "space",
 }
 
 // could probably just store the events themselves after validating the content...

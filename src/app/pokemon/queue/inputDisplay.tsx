@@ -1,6 +1,7 @@
 import { displayName } from "@/utils/nostr";
 import { useProfile } from "../../useProfile";
 import { InputAndAuthor } from "../util";
+import { fmtMsg } from "@/utils/util";
 
 export const InputDisplay = ({
   input,
@@ -10,20 +11,21 @@ export const InputDisplay = ({
   relays: string[];
 }) => {
   const { profile, isLoading } = useProfile(input.pubkey, relays);
-  console.debug("input", input);
 
+  // TODO:
+  // display amount if not zero
+  // make everything larger
   return (
-    <div className="flex justify-between text-white px-4 py-1 text-xl font-semibold">
-      <div className="flex gap-1">
+    <div className="flex justify-between text-white py-1 text-2xl font-semibold">
+      <div className="flex gap-2 items-center">
         {profile?.picture && (
           <img
-            className="h-8 w-8 shrink-0 rounded-[50%]"
+            className="h-10 w-10 shrink-0 rounded-[50%]"
             src={profile.picture}
           />
         )}
         <p className="w-full">
-          {displayName(input.pubkey, profile).slice(0, 15)}
-          {/* {input.pubkey.slice(0, 30)} */}
+          {fmtMsg(displayName(input.pubkey, profile), 20)}
         </p>
       </div>
       <p>{input.input}</p>
