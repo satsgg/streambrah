@@ -5,19 +5,34 @@ import YouTube, { YouTubeProps } from "react-youtube";
 import { Pool } from "../Pool";
 import { Event as NostrEvent, utils } from "nostr-tools";
 import { parseZapRequest } from "@/utils/nostr";
-import { parseVideoId } from "@/utils/util";
+import { parseVideoId, queryVideo } from "./util";
 import { Video } from "./util";
+import { parse } from "path";
 
 // TODO:
 // configurable max play time
 // minimum sats to play/sats per second
+type Playlist = {
+  nowPlaying: Video | null;
+  queue: Video[];
+};
 
 export default function YouTubePlayer() {
-  const [notes, setNotes] = useState<NostrEvent[]>([]);
-  const [queue, setQueue] = useState<Video[]>([]);
-  const [counter, setCounter] = useState(0);
+  const [playlist, setPlaylist] = useState<Playlist>({
+    nowPlaying: null,
+    queue: [],
+  });
 
   const bc = useRef(new BroadcastChannel("youtube-dock"));
+  const bcQueue = useRef(new BroadcastChannel("youtube-queue"));
+
+  useEffect(() => {
+    console.debug("playlist", playlist);
+    bcQueue.current.postMessage(playlist);
+    if (!playlist.nowPlaying && playlist.queue.length > 0) {
+      startNextVideo();
+    }
+  }, [playlist]);
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
@@ -26,9 +41,13 @@ export default function YouTubePlayer() {
       console.debug("channel message", type, value);
       switch (type) {
         case "addTestVideo":
-          setQueue((prev) => {
-            return [...prev, value];
+          setPlaylist((prev) => {
+            return {
+              nowPlaying: prev.nowPlaying,
+              queue: [...prev.queue, value],
+            };
           });
+
           break;
         case "skip":
           startNextVideo();
@@ -54,10 +73,31 @@ export default function YouTubePlayer() {
       },
     ]);
 
-    sub.on("event", (event: NostrEvent) => {
-      console.log("event", event);
-      setNotes((prev) => {
-        return utils.insertEventIntoDescendingList(prev, event);
+    sub.on("event", async (event: NostrEvent) => {
+      // TODO: Fix zap parsing? think i did it in alerts
+      const zap = parseZapRequest(event);
+      if (!zap) return;
+
+      const videoId = parseVideoId(zap.content);
+      if (!videoId) return;
+
+      const res = await queryVideo(videoId);
+      if (!res) return;
+
+      const { title, author, thumbnail } = res;
+      const newVideo: Video = {
+        pubkey: zap.pubkey,
+        id: videoId,
+        title: title,
+        author: author,
+        thumbnail: thumbnail,
+      };
+
+      setPlaylist((prev) => {
+        return {
+          nowPlaying: prev.nowPlaying,
+          queue: [...prev.queue, newVideo],
+        };
       });
     });
 
@@ -66,32 +106,14 @@ export default function YouTubePlayer() {
     };
   }, []);
 
-  useEffect(() => {
-    if (notes.length == 0 && !notes[0]) return;
-
-    const zap = parseZapRequest(notes[0]);
-    if (!zap) return;
-
-    const videoId = parseVideoId(zap.content);
-    if (!videoId) return;
-
-    const newVideo: Video = {
-      pubkey: zap.pubkey,
-      id: videoId,
-    };
-
-    setQueue((prev) => {
-      return [...prev, newVideo];
-    });
-  }, [notes]);
-
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
     event.target.playVideo();
   };
 
   const startNextVideo = () => {
-    setQueue((prev) => {
-      return [...prev.slice(1)];
+    setPlaylist((prev) => {
+      let nextToPlay = prev.queue[0] ?? null;
+      return { nowPlaying: nextToPlay, queue: [...prev.queue.slice(1)] };
     });
   };
 
@@ -110,18 +132,18 @@ export default function YouTubePlayer() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen w-full ">
-      {queue[0] ? (
+    <div className="flex justify-center items-center h-screen w-full">
+      {playlist.nowPlaying ? (
         <YouTube
-          videoId={queue[0].id}
+          videoId={playlist.nowPlaying.id}
           opts={opts}
-          key={counter}
           onReady={onPlayerReady}
           onEnd={startNextVideo}
           onError={startNextVideo}
           // onStateChange={(event) => console.log("player event", event)}
         />
       ) : (
+        // TODO: Streamer might want a transparent background...
         <div className="h-[720px] w-[1280px] bg-black"></div>
       )}
     </div>

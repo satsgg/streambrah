@@ -1,6 +1,44 @@
 export type Video = {
   pubkey: string;
   id: string;
+  title: string;
+  author: string;
+  thumbnail: string;
+};
+
+export type Playlist = {
+  nowPlaying: Video | null;
+  queue: Video[];
+};
+
+export const queryVideo = async (id: string) => {
+  const cleanedVideoUrl = "https://www.youtube.com/watch?v=" + id;
+  const oembedUrl = "https://www.youtube.com/oembed?url=";
+  const query =
+    oembedUrl + encodeURIComponent(cleanedVideoUrl + "&format=json");
+
+  const res = await fetch(query);
+  if (res.ok) {
+    const resJson = await res.json();
+    console.debug("resJson", resJson);
+    return {
+      title: resJson.title,
+      author: resJson.author_name,
+      thumbnail: resJson.thumbnail_url,
+    };
+  }
+
+  return null;
+};
+
+const VIDEO_ID_REGEX = /(watch\?v=)?([\w\-\d]{11})/;
+export const parseVideoId = (content: string): string | null => {
+  if (content === "") return null;
+
+  const parsedUrl = VIDEO_ID_REGEX.exec(content);
+  if (!parsedUrl || !parsedUrl[2]) return null;
+
+  return parsedUrl[2];
 };
 
 export const testVideos = [

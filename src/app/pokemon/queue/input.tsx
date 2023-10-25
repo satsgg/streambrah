@@ -3,13 +3,11 @@ import { useProfile } from "../../useProfile";
 import { InputAndAuthor } from "../util";
 
 export const InputDisplay = ({
-  index,
-  relays,
   input,
+  relays,
 }: {
-  index: number;
-  relays: string[];
   input: InputAndAuthor;
+  relays: string[];
 }) => {
   const { profile, isLoading } = useProfile(input.pubkey, relays);
 

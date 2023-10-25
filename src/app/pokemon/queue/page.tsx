@@ -19,13 +19,13 @@ export default function Queue() {
   }, []);
 
   return (
-    <div className="h-screen w-full nowraptext-white pt-32">
+    <div className="flex justify-center h-screen w-full nowrap text-white">
       <Virtuoso
         data={events}
         className="no-scrollbar"
         followOutput={"smooth"}
         itemContent={(index, input) => {
-          return <InputDisplay index={index} input={input} relays={relays} />;
+          return <InputDisplay input={input} relays={relays} />;
         }}
       />
     </div>

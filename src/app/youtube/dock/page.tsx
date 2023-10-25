@@ -1,15 +1,27 @@
 "use client";
 import { useRef, useState } from "react";
-import { testVideos } from "../util";
+import { Video, queryVideo, testVideos } from "../util";
 
 export default function Dock() {
   const bc = useRef(new BroadcastChannel("youtube-dock"));
   const [currentTestVideo, setCurrentTestVideo] = useState(0);
 
-  const playTestVideo = () => {
+  const addTestVideo = async () => {
+    const res = await queryVideo(testVideos[currentTestVideo].id);
+    if (!res) return;
+
+    const { title, author, thumbnail } = res;
+    const newVideo: Video = {
+      pubkey: testVideos[currentTestVideo].pubkey,
+      id: testVideos[currentTestVideo].id,
+      title: title,
+      author: author,
+      thumbnail: thumbnail,
+    };
+
     bc.current.postMessage({
       type: "addTestVideo",
-      value: testVideos[currentTestVideo],
+      value: newVideo,
     });
     if (currentTestVideo + 1 == testVideos.length) {
       setCurrentTestVideo(0);
@@ -33,7 +45,7 @@ export default function Dock() {
 
   return (
     <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white">
-      <button className="rounded bg-gray-600 px-2 py-1" onClick={playTestVideo}>
+      <button className="rounded bg-gray-600 px-2 py-1" onClick={addTestVideo}>
         Add test video
       </button>
       <button className="rounded bg-gray-600 px-2 py-1" onClick={skip}>
