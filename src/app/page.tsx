@@ -22,11 +22,12 @@ export default function Home() {
                 <h2 className="text-xl font-semibold">📺 Youtube</h2>
               </div>
             </Link>
-            <Link href="/pokemon/configure">
-              <div className="hover:bg-gray-300 hover:cursor-pointer border rounded p-2">
-                <h2 className="text-xl font-semibold">🐱 Pokemon</h2>
-              </div>
-            </Link>
+            {/* <Link href="/pokemon/configure"> */}
+            <div className="hover:bg-gray-300 hover:cursor-not-allowed border rounded p-2">
+              {/* <h2 className="text-xl font-semibold">🐱 Pokemon</h2> */}
+              <h2 className="text-xl font-semibold">🤫 Surprise</h2>
+            </div>
+            {/* </Link> */}
           </div>
         </div>
         <div></div>
