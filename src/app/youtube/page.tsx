@@ -34,6 +34,26 @@ export default function YouTubePlayer() {
     }
   }, [playlist]);
 
+  const addToQueue = (video: Video) => {
+    setPlaylist((prev) => {
+      let prevQueue = [...prev.queue];
+
+      let existingVideoInQueue = prevQueue.find((v) => v.id === video.id);
+      if (existingVideoInQueue) {
+        existingVideoInQueue.amount += video.amount;
+      } else {
+        prevQueue.push(video);
+      }
+
+      prevQueue.sort((a, b) => b.amount - a.amount);
+
+      return {
+        nowPlaying: prev.nowPlaying,
+        queue: prevQueue,
+      };
+    });
+  };
+
   useEffect(() => {
     bc.current.onmessage = (event) => {
       const type = event.data.type;
@@ -41,13 +61,7 @@ export default function YouTubePlayer() {
       console.debug("channel message", type, value);
       switch (type) {
         case "addTestVideo":
-          setPlaylist((prev) => {
-            return {
-              nowPlaying: prev.nowPlaying,
-              queue: [...prev.queue, value],
-            };
-          });
-
+          addToQueue(value);
           break;
         case "skip":
           startNextVideo();
@@ -60,7 +74,6 @@ export default function YouTubePlayer() {
 
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
-  console.debug("pubkey", pubkey);
   const relays = searchParams.getAll("relay");
   const now = useRef(Math.floor(Date.now() / 1000));
 
@@ -75,6 +88,8 @@ export default function YouTubePlayer() {
       },
     ]);
 
+    // TODO: This doesn't double check for same note coming in on multiple relays??
+    // check when recieving the note... add eventId to Video
     sub.on("event", async (event: NostrEvent<9735>) => {
       console.debug("event", event);
       const zapRequestTag = event.tags.find((t) => t[0] == "description");
@@ -106,12 +121,7 @@ export default function YouTubePlayer() {
         thumbnail: thumbnail,
       };
 
-      setPlaylist((prev) => {
-        return {
-          nowPlaying: prev.nowPlaying,
-          queue: [...prev.queue, newVideo],
-        };
-      });
+      addToQueue(newVideo);
     });
 
     return () => {
