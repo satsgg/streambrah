@@ -2,7 +2,7 @@
 import { useProfile } from "@/app/useProfile";
 import { Video } from "../util";
 import { displayName } from "@/utils/nostr";
-import { fmtMsg } from "@/utils/util";
+import { fmtMsg, fmtNumber } from "@/utils/util";
 
 export default function VideoDisplay({
   video,
@@ -12,8 +12,9 @@ export default function VideoDisplay({
   relays: string[];
 }) {
   const { profile, isLoading } = useProfile(video.pubkey, relays);
+  console.debug("video", video);
 
-  // TODO: More formatting, add zap amount
+  // TODO: More formatting
   return (
     <div className="flex justify-between text-white py-1 items-center">
       <div className="flex gap-2 items-center max-w-1/3">
@@ -23,9 +24,12 @@ export default function VideoDisplay({
             src={profile.picture}
           />
         )}
-        <p className="w-full text-xl font-semibold text-ellipsis max-w-1/3">
-          {fmtMsg(displayName(video.pubkey, profile), 15)}
-        </p>
+        <div>
+          <p className="w-full text-xl font-semibold text-ellipsis max-w-1/3">
+            {fmtMsg(displayName(video.pubkey, profile), 15)}
+          </p>
+          <p>⚡{fmtNumber(video.amount, true)}</p>
+        </div>
       </div>
       <div className="flex gap-x-2 items-center">
         <div>

@@ -23,7 +23,7 @@ export default function Queue() {
   }, []);
 
   return (
-    <div className="h-screen w-full nowrap text-white">
+    <div className="h-screen w-full nowrap text-white bg-gray-500">
       <Virtuoso
         data={playlist.queue}
         className="no-scrollbar"

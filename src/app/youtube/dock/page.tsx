@@ -14,6 +14,7 @@ export default function Dock() {
     const newVideo: Video = {
       pubkey: testVideos[currentTestVideo].pubkey,
       id: testVideos[currentTestVideo].id,
+      amount: testVideos[currentTestVideo].amount,
       title: title,
       author: author,
       thumbnail: thumbnail,

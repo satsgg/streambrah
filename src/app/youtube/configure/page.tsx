@@ -120,6 +120,7 @@ const PubkeyForm = ({
     } else if (!validHexKey(key)) {
       return false;
     }
+    setPubkey(key);
     return true;
   };
 
@@ -134,7 +135,7 @@ const PubkeyForm = ({
       }),
     }),
     defaultValues: {
-      pubkey: "npub1e0qhxhrmkpalvyz75wqusaahunrkkenslnadaftyjyrkchx6yrmq50umra",
+      pubkey: "",
     },
   });
 
@@ -159,10 +160,7 @@ const PubkeyForm = ({
 };
 
 export default function ConfigureNotifications() {
-  // const [pubkey, setPubkey] = useState("");
-  const [pubkey, setPubkey] = useState(
-    "npub1e0qhxhrmkpalvyz75wqusaahunrkkenslnadaftyjyrkchx6yrmq50umra"
-  );
+  const [pubkey, setPubkey] = useState("");
   const [relays, setRelays] = useState<string[]>([
     "wss://relay.damus.io",
     "wss://eden.nostr.land",
@@ -176,13 +174,16 @@ export default function ConfigureNotifications() {
     if (pubkey.startsWith("npub1")) {
       hexPubkey = npubToHex(pubkey);
     }
-    const encodedPubkey = encodeURIComponent(hexPubkey);
+    // const encodedPubkey = encodeURIComponent(hexPubkey);
+    const encodedPubkey = hexPubkey;
     const url = `http://localhost:3000/youtube?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
       "&" + "relay" + "="
     )}`;
     console.log("url", url);
     setLink(url);
   };
+
+  console.log("publey", pubkey);
 
   return (
     <main className="flex flex-col min-h-screen p-16">

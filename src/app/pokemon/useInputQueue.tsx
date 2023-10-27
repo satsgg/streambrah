@@ -19,7 +19,7 @@ export const useInputQueue = (pubkey: string | null, relays: string[]) => {
 
   useEffect(() => {
     if (!pubkey || relays?.length == 0) return;
-    console.log("subscribing to relays", relays);
+    // TODO: chat zaps
     let sub = Pool.sub(relays, [
       {
         kinds: [1311],

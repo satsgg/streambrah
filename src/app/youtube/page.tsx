@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { Pool } from "../Pool";
 import { Event as NostrEvent, utils } from "nostr-tools";
-import { parseZapRequest } from "@/utils/nostr";
+import { getZapAmountFromReceipt, parseZapRequest } from "@/utils/nostr";
 import { parseVideoId, queryVideo } from "./util";
 import { Video } from "./util";
 import { parse } from "path";
@@ -60,6 +60,7 @@ export default function YouTubePlayer() {
 
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
+  console.debug("pubkey", pubkey);
   const relays = searchParams.getAll("relay");
   const now = useRef(Math.floor(Date.now() / 1000));
 
@@ -69,14 +70,25 @@ export default function YouTubePlayer() {
       {
         kinds: [9735],
         "#p": [pubkey || ""],
+        // TODO: #a
         since: now.current,
       },
     ]);
 
-    sub.on("event", async (event: NostrEvent) => {
-      // TODO: Fix zap parsing? think i did it in alerts
-      const zap = parseZapRequest(event);
+    sub.on("event", async (event: NostrEvent<9735>) => {
+      console.debug("event", event);
+      const zapRequestTag = event.tags.find((t) => t[0] == "description");
+      if (!zapRequestTag || !zapRequestTag[1]) return;
+
+      const zapRequest: NostrEvent<9734> = JSON.parse(zapRequestTag[1]);
+
+      const zap = parseZapRequest(zapRequest);
+      console.debug("zap", zap);
       if (!zap) return;
+
+      const amount = getZapAmountFromReceipt(event);
+      console.debug("amount", amount);
+      if (!amount) return;
 
       const videoId = parseVideoId(zap.content);
       if (!videoId) return;
@@ -87,6 +99,7 @@ export default function YouTubePlayer() {
       const { title, author, thumbnail } = res;
       const newVideo: Video = {
         pubkey: zap.pubkey,
+        amount: amount,
         id: videoId,
         title: title,
         author: author,

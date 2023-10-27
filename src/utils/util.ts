@@ -5,3 +5,9 @@ export const fmtMsg = (content: string, maxLen: number = MAX_MSG_LEN) => {
   }
   return content;
 };
+
+export const fmtNumber = (number: number, compact: boolean = false) => {
+  let notation: Intl.NumberFormatOptions | undefined = undefined;
+  if (compact) notation = { notation: "compact", maximumSignificantDigits: 3 };
+  return Intl.NumberFormat("en", notation).format(number);
+};

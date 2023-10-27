@@ -62,6 +62,7 @@ export default function Notifications() {
       },
     ]);
 
+    // TODO: Refactor to use new amount parsing and zapRequest Type
     sub.on("event", (event: NostrEvent) => {
       const zapRequest = parseZapRequest(event);
       if (!zapRequest) return;
