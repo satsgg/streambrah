@@ -120,6 +120,7 @@ const PubkeyForm = ({
     } else if (!validHexKey(key)) {
       return false;
     }
+    setPubkey(key);
     return true;
   };
 

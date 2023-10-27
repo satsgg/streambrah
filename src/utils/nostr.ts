@@ -9,6 +9,24 @@ export const DEFAULT_RELAYS = [
   "wss://nos.lol",
 ];
 
+export const validHexPrivkey = (hexKey: string) => {
+  try {
+    if (!hexKey.match(/^[a-f0-9]{64}$/)) {
+      throw new Error("Invalid hex private key");
+    }
+    let npub = nip19.nsecEncode(hexKey);
+    let { type, data: nipData } = nip19.decode(npub);
+    if (type !== "nsec") {
+      throw new Error("Invalid hex private key");
+    }
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+
+  return true;
+};
+
 export const validHexKey = (hexKey: string) => {
   try {
     if (!hexKey.match(/^[a-f0-9]{64}$/)) {
@@ -19,6 +37,20 @@ export const validHexKey = (hexKey: string) => {
     if (type !== "npub") {
       throw new Error("Invalid hex public key");
     }
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+
+  return true;
+};
+
+export const validNsecKey = (nsec: string) => {
+  try {
+    if (nsec.length !== 63) throw new Error("Invalid nsec key length");
+
+    let { type, data: nipData } = nip19.decode(nsec);
+    if (type !== "nsec") throw new Error("Invalid nsec key");
   } catch (error) {
     console.error(error);
     return false;

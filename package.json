@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.1",
+    "bufferutil": "^4.0.8",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.6",
     "light-bolt11-decoder": "^3.0.0",
@@ -22,6 +23,7 @@
     "react-hook-form": "^7.47.0",
     "react-virtuoso": "^4.6.2",
     "react-youtube": "^10.1.0",
+    "utf-8-validate": "^6.0.3",
     "wasmboy": "^0.7.1",
     "zod": "^3.22.4"
   },
