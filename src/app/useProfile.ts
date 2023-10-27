@@ -9,7 +9,6 @@ const profileCacheDuration = 86400;
 
 const callback = async (event: NostrEvent) => {
   const profile: UserMetadata = JSON.parse(event.content);
-  console.log("fetched profile", profile);
   const profileToStore: UserMetadataStore = {
     ...profile,
     pubkey: event.pubkey,
