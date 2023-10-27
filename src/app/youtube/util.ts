@@ -1,6 +1,7 @@
 // TODO: Add amount
 export type Video = {
   pubkey: string;
+  eventId: string;
   amount: number;
   id: string;
   title: string;
@@ -46,21 +47,25 @@ export const parseVideoId = (content: string): string | null => {
 export const testVideos = [
   {
     pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    eventId: "123",
     amount: 123,
     id: "Yaxq3iggMdM",
   },
   {
     pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    eventId: "311",
     amount: 69,
     id: "4ASKMcdCc3g",
   },
   {
     pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    eventId: "619",
     amount: 420,
     id: "xzpndHtdl9A",
   },
   {
     pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
+    eventId: "300000",
     amount: 18,
     id: "aqx8K3n6Rlo",
   },

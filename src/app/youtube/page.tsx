@@ -36,6 +36,9 @@ export default function YouTubePlayer() {
 
   const addToQueue = (video: Video) => {
     setPlaylist((prev) => {
+      if (prev.queue.some((v) => v.eventId === video.eventId)) {
+        return prev;
+      }
       let prevQueue = [...prev.queue];
 
       let existingVideoInQueue = prevQueue.find((v) => v.id === video.id);
@@ -85,6 +88,7 @@ export default function YouTubePlayer() {
         "#p": [pubkey || ""],
         // TODO: #a
         since: now.current,
+        // since: now.current - 1000 * 60 * 60 * 1,
       },
     ]);
 
@@ -114,6 +118,7 @@ export default function YouTubePlayer() {
       const { title, author, thumbnail } = res;
       const newVideo: Video = {
         pubkey: zap.pubkey,
+        eventId: event.id,
         amount: amount,
         id: videoId,
         title: title,
