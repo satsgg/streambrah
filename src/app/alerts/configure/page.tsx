@@ -178,7 +178,7 @@ export default function ConfigureNotifications() {
       hexPubkey = npubToHex(pubkey);
     }
     const encodedPubkey = encodeURIComponent(hexPubkey);
-    const url = `http://localhost:3000/notifications?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
+    const url = `http://localhost:3000/alerts?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
       "&" + "relay" + "="
     )}`;
     console.log("url", url);

@@ -12,13 +12,7 @@ import { fmtMsg, fmtNumber } from "@/utils/util";
 import { useProfile } from "../useProfile";
 import { ZapAlert } from "./util";
 
-const Notification = ({
-  alert,
-  relays,
-}: {
-  alert: ZapAlert;
-  relays: string[];
-}) => {
+const Alert = ({ alert, relays }: { alert: ZapAlert; relays: string[] }) => {
   const { profile, isLoading } = useProfile(alert.pubkey, relays);
   useEffect(() => {
     console.debug("zap alert mounted", alert);
@@ -41,7 +35,7 @@ const Notification = ({
   );
 };
 
-export default function Notifications() {
+export default function Alerts() {
   const [alerts, setAlerts] = useState<ZapAlert[]>([]);
   const [alertVisible, setAlertVisible] = useState(false);
   const searchParams = useSearchParams();
@@ -150,7 +144,7 @@ export default function Notifications() {
             setAlertVisible(false);
           }}
         >
-          {alerts[0] && <Notification alert={alerts[0]} relays={relays} />}
+          {alerts[0] && <Alert alert={alerts[0]} relays={relays} />}
         </div>
       )}
     </main>

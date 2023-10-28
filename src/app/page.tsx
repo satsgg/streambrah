@@ -12,7 +12,7 @@ export default function Home() {
             Enhance your nostr stream experience with fun widgets and services
           </h2>
           <div className="flex justify-between gap-x-4 mt-8">
-            <Link href="/notifications/configure">
+            <Link href="/alerts/configure">
               <div className="hover:bg-gray-300 hover:cursor-pointer border rounded p-2">
                 <h2 className="text-xl font-semibold">⚠️ Alerts️</h2>
               </div>
