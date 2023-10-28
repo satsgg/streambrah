@@ -6,7 +6,7 @@ export default function Home() {
       <div id="mainContent" className="flex h-full justify-center">
         <div className="flex flex-col justify-center">
           <h1 className="text-8xl font-bold align-center text-center">
-            🎥 Kitted
+            🎥 Streambrah
           </h1>
           <h2 className="text-xl pt-2">
             Enhance your nostr stream experience with fun widgets and services

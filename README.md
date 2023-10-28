@@ -1,4 +1,4 @@
-## Kitted
+## Streambrah
 
 A suite of nostr live streaming tools, widgets, and services.
 
