@@ -2,50 +2,50 @@
 import { useEffect, useState, useRef } from "react";
 import OBSWebSocket, { EventSubscription } from "obs-websocket-js";
 import PrivkeyForm from "./privkeyForm";
+import { publishLiveEvent } from "./util";
 
 export default function EventManager() {
   const [connected, setConnected] = useState(false);
   const [privkey, setPrivkey] = useState<string | null>(null);
   const [streamStatus, setStreamStatus] = useState<any>({});
-  const obs = useRef(new OBSWebSocket());
+  // const obs = useRef(new OBSWebSocket());
 
-  useEffect(() => {
-    const connect = async () => {
-      try {
-        console.debug("connecting");
-        // await obs.current.connect("ws://192.168.1.244", "password");
-        // await obs.current.connect("ws://192.168.1.244");
-        // TODO: If using password, prompt user for it...
-        await obs.current.connect();
-      } catch (error) {
-        console.error("error", error);
-      }
-    };
-    connect();
+  // useEffect(() => {
+  //   const connect = async () => {
+  //     try {
+  //       console.debug("connecting");
+  //       // await obs.current.connect("ws://192.168.1.244", "password");
+  //       // await obs.current.connect("ws://192.168.1.244");
+  //       // TODO: If using password, prompt user for it...
+  //       await obs.current.connect();
+  //     } catch (error) {
+  //       console.error("error", error);
+  //     }
+  //   };
+  //   connect();
 
-    obs.current.on("ConnectionOpened", () => {
-      console.debug("connected!");
-      setConnected(true);
-    });
+  //   obs.current.on("ConnectionOpened", () => {
+  //     console.debug("connected!");
+  //     setConnected(true);
+  //   });
 
-    return () => {
-      // this breaks connection with react strict mode true
-      const disconnect = async () => {
-        await obs.current.disconnect();
-        setConnected(false);
-      };
-      disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     // this breaks connection with react strict mode true
+  //     const disconnect = async () => {
+  //       await obs.current.disconnect();
+  //       setConnected(false);
+  //     };
+  //     disconnect();
+  //   };
+  // }, []);
 
-  const getStreamStatus = async () => {
-    if (!connected) return;
-    console.log("getting stream status");
-    const status = await obs.current.call("GetStreamStatus");
-    setStreamStatus(status);
-    console.log("stream status", status);
-  };
-  console.debug("privkey", privkey);
+  // const getStreamStatus = async () => {
+  //   if (!connected) return;
+  //   console.log("getting stream status");
+  //   const status = await obs.current.call("GetStreamStatus");
+  //   setStreamStatus(status);
+  //   console.log("stream status", status);
+  // };
 
   // useEffect(() => {
   //   if (!connected) {
@@ -61,7 +61,7 @@ export default function EventManager() {
   // }, [connected]);
 
   return (
-    <div className="h-screen bg-slate-500">
+    <div className="h-screen bg-gray-800 text-white">
       {/* {typeof window !== "undefined" && !window.obsstudio ? (
         // maybe make a layout that shows this message as a banner..
         // can also set background to light grey for testing in browser
@@ -79,7 +79,32 @@ export default function EventManager() {
         </div>
       )} */}
       {privkey ? (
-        <div>hi</div>
+        <div className="flex gap-2">
+          <button
+            className="rounded bg-gray-600 px-2 py-1"
+            onClick={async () =>
+              await publishLiveEvent(
+                privkey,
+                "atlbitlabhalloweenparty2023",
+                "live"
+              )
+            }
+          >
+            Start
+          </button>
+          <button
+            className="rounded bg-gray-600 px-2 py-1"
+            onClick={async () =>
+              await publishLiveEvent(
+                privkey,
+                "atlbitlabhalloweenparty2023",
+                "ended"
+              )
+            }
+          >
+            End
+          </button>
+        </div>
       ) : (
         <div className="flex h-full justify-center items-center">
           <div className="flex flex-col gap-y-2">

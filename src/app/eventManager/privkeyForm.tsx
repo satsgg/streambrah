@@ -3,6 +3,7 @@ import { useZodForm } from "@/utils/useZodForm";
 import { nip19 } from "nostr-tools";
 import { z } from "zod";
 
+// TODO: nsec doesn't work
 export default function PrivkeyForm({ setPrivkey }: { setPrivkey: Function }) {
   const privkeyValidator = (key: string) => {
     if (key.startsWith("nsec1")) {
@@ -10,6 +11,7 @@ export default function PrivkeyForm({ setPrivkey }: { setPrivkey: Function }) {
         return false;
       }
       let { type, data: nipData } = nip19.decode(key);
+      console.debug("nipdata", nipData);
       setPrivkey(nipData as string);
     } else if (!validHexPrivkey(key)) {
       return false;
