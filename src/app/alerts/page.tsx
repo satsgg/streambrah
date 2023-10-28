@@ -130,7 +130,7 @@ export default function Alerts() {
   }, [alerts]);
 
   return (
-    <main className="flex min-h-screen w-full justify-center items-center overflow-y-auto bg-gray-500">
+    <main className="flex min-h-screen w-full justify-center items-center overflow-y-auto">
       {alertVisible && (
         <div
           className="flex animate-alert justify-center items-center sm:w-3/4 lg:w-1/2"
