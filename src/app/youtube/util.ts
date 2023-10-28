@@ -1,4 +1,3 @@
-// TODO: Add amount
 export type Video = {
   pubkey: string;
   eventId: string;
