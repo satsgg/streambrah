@@ -1,6 +1,8 @@
 "use client";
 import { MouseEvent, useEffect, useRef, useState } from "react";
+// @ts-ignore
 import { WasmBoy } from "wasmboy";
+// @ts-ignore
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
@@ -108,6 +110,7 @@ export default function Pokemon() {
     const inputInterval = setInterval(() => {
       setInputs((prev) => {
         if (prev.length == 0) return [];
+        // @ts-ignore
         const input = Input[prev[0].input];
         // TODO: saveInterval isn't called twice... even with strict mode. it's still fine tho
         // maybe should execute move outside of this

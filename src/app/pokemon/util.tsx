@@ -37,6 +37,7 @@ export const parseInput = (event: NostrEvent): InputAndAuthor | null => {
 export const stateToJson = (state: any) => {
   const jsonState = JSON.stringify(state, (key, value) => {
     if (value instanceof Uint8Array) {
+      // @ts-ignore
       return Array.apply([], value);
     }
     return value;
