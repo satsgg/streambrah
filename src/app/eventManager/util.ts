@@ -31,7 +31,7 @@ export const signEventPrivkey = (
 
 export const publishLiveEvent = async (
   privkey: string,
-  d: string,
+  eventConfig: EventConfig,
   status: "planned" | "live" | "ended"
 ) => {
   const event: UnsignedEvent = {
@@ -39,38 +39,73 @@ export const publishLiveEvent = async (
     pubkey: getPublicKey(privkey),
     created_at: Math.floor(Date.now() / 1000),
     tags: [
-      ["d", d],
-      ["title", "ATL BitLab Halloween Party 👻"],
-      [
-        "summary",
-        "Streambrah hackathon project demo. Zap a YouTube link or video ID.",
-      ],
-      [
-        "streaming",
-        "https://stream.mux.com/MKBpERvbpaut3Mf500FT00wt019NXtarK00XOV4TiEazPAk.m3u8",
-      ],
-      [
-        "image",
-        "https://secure.meetupstatic.com/photos/event/3/c/a/b/600_516255531.webp?w=750",
-      ],
+      ["d", eventConfig.d],
+      ["title", eventConfig.title],
+      ["summary", eventConfig.summary],
+      ["streaming", eventConfig.streaming],
       ["starts", `${Math.floor(Date.now() / 1000)}`],
       ["status", status],
     ],
     content: "",
   };
-  console.debug("live event", event);
-  const signedEvent = signEventPrivkey(event, privkey);
+  if (eventConfig.image) event.tags.push(["image", eventConfig.image]);
 
-  // publish
-  if (!signedEvent) throw new Error("Failed to sign message");
-  let ok = validateEvent(signedEvent);
-  if (!ok) throw new Error("Invalid event");
-  let veryOk = verifySignature(signedEvent);
-  if (!veryOk) throw new Error("Invalid signature");
+  // const signedEvent = signEventPrivkey(event, privkey);
 
-  let pubs = Pool.publish(DEFAULT_RELAYS, signedEvent);
-  await Promise.all(pubs);
-  console.debug("pubs", pubs);
+  // // publish
+  // if (!signedEvent) throw new Error("Failed to sign message");
+  // let ok = validateEvent(signedEvent);
+  // if (!ok) throw new Error("Invalid event");
+  // let veryOk = verifySignature(signedEvent);
+  // if (!veryOk) throw new Error("Invalid signature");
+
+  // let pubs = Pool.publish(DEFAULT_RELAYS, signedEvent);
+  // await Promise.all(pubs);
+  // console.debug("pubs", pubs);
 
   return event;
+};
+
+// "tags": [
+//   ["d", "<unique identifier>"],
+//   ["title", "<name of the event>"],
+//   ["summary", "<description>"],
+//   ["image", "<preview image url>"],
+//   ["t", "hashtag"]
+//   ["streaming", "<url>"],
+//   ["recording", "<url>"], // used to place the edited video once the activity is over
+//   ["starts", "<unix timestamp in seconds>"],
+//   ["ends", "<unix timestamp in seconds>"],
+//   ["status", "<planned, live, ended>"],
+//   ["current_participants", "<number>"],
+//   ["total_participants", "<number>"],
+//   ["p", "91cf9..4e5ca", "wss://provider1.com/", "Host", "<proof>"],
+//   ["p", "14aeb..8dad4", "wss://provider2.com/nostr", "Speaker"],
+//   ["p", "612ae..e610f", "ws://provider3.com/ws", "Participant"],
+//   ["relays", "wss://one.com", "wss://two.com", ...]
+// ],
+
+export type EventConfig = {
+  d: string;
+  title: string;
+  summary: string;
+  image?: string;
+  t?: string[];
+  streaming: string;
+  recording?: string;
+  starts?: string;
+  ends?: string;
+  status: "planned" | "live" | "ended";
+  currentParticipants?: string;
+  totalParticipants?: string;
+  p?: string[];
+  relays?: string[];
+};
+
+export const DEFAULT_EVENT_CONFIG: EventConfig = {
+  d: "",
+  title: "",
+  summary: "",
+  streaming: "",
+  status: "planned",
 };

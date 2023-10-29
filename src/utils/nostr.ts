@@ -48,7 +48,6 @@ export const validHexKey = (hexKey: string) => {
 export const validNsecKey = (nsec: string) => {
   try {
     if (nsec.length !== 63) throw new Error("Invalid nsec key length");
-
     let { type, data: nipData } = nip19.decode(nsec);
     if (type !== "nsec") throw new Error("Invalid nsec key");
   } catch (error) {

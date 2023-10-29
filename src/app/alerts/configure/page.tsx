@@ -135,7 +135,7 @@ const PubkeyForm = ({
       }),
     }),
     defaultValues: {
-      pubkey: "npub1e0qhxhrmkpalvyz75wqusaahunrkkenslnadaftyjyrkchx6yrmq50umra",
+      pubkey: "",
     },
   });
 
@@ -160,10 +160,7 @@ const PubkeyForm = ({
 };
 
 export default function ConfigureNotifications() {
-  // const [pubkey, setPubkey] = useState("");
-  const [pubkey, setPubkey] = useState(
-    "npub1e0qhxhrmkpalvyz75wqusaahunrkkenslnadaftyjyrkchx6yrmq50umra"
-  );
+  const [pubkey, setPubkey] = useState("");
   const [relays, setRelays] = useState<string[]>([
     "wss://relay.damus.io",
     "wss://eden.nostr.land",

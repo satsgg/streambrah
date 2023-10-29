@@ -46,7 +46,7 @@ export default function Dock() {
   // - set cost per second?
 
   return (
-    <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white">
+    <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white p-2">
       <button className="rounded bg-gray-600 px-2 py-1" onClick={addTestVideo}>
         Add test video
       </button>
