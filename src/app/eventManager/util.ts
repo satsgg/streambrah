@@ -72,6 +72,38 @@ export const publishLiveEvent = async (
   return event;
 };
 
+export const publishNowPlaying = async (
+  creator: string,
+  title: string,
+  link: string,
+  privkey: string,
+  eventConfig: EventConfig
+) => {
+  const event: UnsignedEvent = {
+    kind: 1311,
+    pubkey: getPublicKey(privkey),
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [["a", `30311:${getPublicKey(privkey)}:${eventConfig.d}`]],
+    content: `Now playing ${title} by ${creator}\n${link}`,
+  };
+
+  console.log(event);
+  const signedEvent = signEventPrivkey(event, privkey);
+
+  // publish
+  if (!signedEvent) throw new Error("Failed to sign message");
+  let ok = validateEvent(signedEvent);
+  if (!ok) throw new Error("Invalid event");
+  let veryOk = verifySignature(signedEvent);
+  if (!veryOk) throw new Error("Invalid signature");
+
+  let pubs = Pool.publish(DEFAULT_RELAYS, signedEvent);
+  await Promise.all(pubs);
+  console.debug("pubs", pubs);
+
+  return event;
+};
+
 // "tags": [
 //   ["d", "<unique identifier>"],
 //   ["title", "<name of the event>"],
@@ -101,6 +133,7 @@ export type EventConfig = {
   recording?: string;
   starts?: string;
   ends?: string;
+  prevStatus?: "planned" | "live" | "ended";
   status?: "planned" | "live" | "ended";
   currentParticipants?: string;
   totalParticipants?: string;
@@ -114,5 +147,6 @@ export const DEFAULT_EVENT_CONFIG: EventConfig = {
   summary: "",
   streaming: "",
   status: "planned",
+  prevStatus: "planned",
   p: [],
 };

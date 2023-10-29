@@ -10,6 +10,7 @@
     "jest": "jest"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.17",
     "@hookform/resolvers": "^3.3.1",
     "bufferutil": "^4.0.8",
     "dexie": "^3.2.4",
@@ -18,11 +19,15 @@
     "next": "13.5.4",
     "nostr-tools": "^1.16.0",
     "obs-websocket-js": "^5.0.3",
+    "qrcode": "^1.5.3",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.47.0",
+    "react-hotkeys-hook": "^4.4.1",
+    "react-player": "^2.13.0",
     "react-virtuoso": "^4.6.2",
     "react-youtube": "^10.1.0",
+    "swr": "^2.2.4",
     "utf-8-validate": "^6.0.3",
     "wasmboy": "^0.7.1",
     "zod": "^3.22.4"

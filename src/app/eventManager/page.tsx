@@ -1,14 +1,18 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import OBSWebSocket, { EventSubscription } from "obs-websocket-js";
+import OBSWebSocket from "obs-websocket-js";
 import PrivkeyForm from "./privkeyForm";
-import { DEFAULT_EVENT_CONFIG, EventConfig, publishLiveEvent } from "./util";
+import {
+  DEFAULT_EVENT_CONFIG,
+  EventConfig,
+  publishLiveEvent,
+  publishNowPlaying,
+} from "./util";
 import { useZodForm } from "@/utils/useZodForm";
 import { z } from "zod";
 import { FieldError } from "react-hook-form";
 import StreamDisplay from "./streamDisplay";
 import AddParticipantForm from "./addParticipantForm";
-import UserDisplay from "./userDisplay";
 import RemoveableParticipantForm from "./removeableParticipantForm";
 
 const Input = ({
@@ -46,6 +50,7 @@ const loadLocalStorageConfig = (): null | EventConfig => {
   const storeConfig = localStorage.getItem("eventManagerConfig");
   if (!storeConfig) return null;
   let config: EventConfig = JSON.parse(storeConfig);
+  config.p = [];
 
   return config;
 };
@@ -65,6 +70,7 @@ export default function EventManager() {
   const obs = useRef(new OBSWebSocket());
 
   const bc = useRef(new BroadcastChannel("eventManager"));
+  const bcNowPlaying = useRef(new BroadcastChannel("eventManager-nowPlaying"));
 
   useEffect(() => {
     if (!privkey) return;
@@ -76,6 +82,23 @@ export default function EventManager() {
       switch (type) {
         case "wavman":
           // need to remove previous and add new...
+          // setParticipants(value.)
+          setAndWipeParticipants(value.pubkey);
+          const content = JSON.parse(value.content);
+          console.debug("content", content);
+          bcNowPlaying.current.postMessage(content);
+          setEventConfig((prev) => {
+            if (prev.status === "live") {
+              publishNowPlaying(
+                content.creator,
+                content.title,
+                content.link,
+                privkey,
+                prev
+              );
+            }
+            return prev;
+          });
           break;
         default:
           console.error("invalid event message");
@@ -151,11 +174,25 @@ export default function EventManager() {
     obs.current.on("StreamStateChanged", async (event) => {
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STARTED") {
         console.debug("output started", event);
-        await publishLiveEvent(privkey, eventConfig, "live");
+        setEventConfig((prev) => {
+          // publishLiveEvent(privkey, prev, "live");
+          return {
+            ...prev,
+            prevStatus: "ended",
+            status: "live",
+          };
+        });
       }
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STOPPED") {
         console.debug("output started", event);
-        await publishLiveEvent(privkey, eventConfig, "ended");
+        setEventConfig((prev) => {
+          // publishLiveEvent(privkey, prev, "ended");
+          return {
+            ...prev,
+            prevStatus: "live",
+            status: "ended",
+          };
+        });
       }
     });
 
@@ -182,6 +219,18 @@ export default function EventManager() {
     });
   };
 
+  const setAndWipeParticipants = (participant: string) => {
+    setEventConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        p: [participant],
+      };
+
+      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      return newConfig;
+    });
+  };
+
   const removeParticipant = (participant: string) => {
     console.debug("removing participant", participant);
     setEventConfig((prev) => {
@@ -194,6 +243,21 @@ export default function EventManager() {
       return newConfig;
     });
   };
+
+  useEffect(() => {
+    if (!privkey) return;
+    console.debug("eventConfig", eventConfig);
+    if (eventConfig.status === "live") {
+      console.debug("firing live");
+      publishLiveEvent(privkey, eventConfig, "live");
+    } else if (
+      eventConfig.status === "ended" &&
+      eventConfig.prevStatus === "live"
+    ) {
+      console.debug("firing ended");
+      publishLiveEvent(privkey, eventConfig, "ended");
+    }
+  }, [JSON.stringify(eventConfig)]);
 
   return (
     <div className="h-screen bg-gray-800 overflow-auto text-white">
