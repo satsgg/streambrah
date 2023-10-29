@@ -96,7 +96,7 @@ export type EventConfig = {
   recording?: string;
   starts?: string;
   ends?: string;
-  status: "planned" | "live" | "ended";
+  status?: "planned" | "live" | "ended";
   currentParticipants?: string;
   totalParticipants?: string;
   p?: string[];

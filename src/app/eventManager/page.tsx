@@ -53,11 +53,9 @@ export default function EventManager() {
   const [view, setView] = useState<"home" | "settings">("home");
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
-  // TODO: Save config in local storage
   const [eventConfig, setEventConfig] = useState<EventConfig>(
     loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
   );
-  const [streamStatus, setStreamStatus] = useState<any>({});
   const obs = useRef(new OBSWebSocket());
 
   const {
@@ -140,52 +138,15 @@ export default function EventManager() {
     };
   }, [privkey]);
 
-  // const getStreamStatus = async () => {
-  //   if (!connected) return;
-  //   console.log("getting stream status");
-  //   const status = await obs.current.call("GetStreamStatus");
-  //   setStreamStatus(status);
-  //   console.log("stream status", status);
-  // };
-
-  // useEffect(() => {
-  //   if (!connected) {
-  //     return;
-  //   }
-  //   const statusInterval = setInterval(() => {
-  //     getStreamStatus();
-  //   }, 1000);
-
-  //   return () => {
-  //     clearInterval(statusInterval);
-  //   };
-  // }, [connected]);
-
   return (
     <div className="h-screen bg-gray-800 overflow-auto text-white">
-      {/* {typeof window !== "undefined" && !window.obsstudio ? (
-        // maybe make a layout that shows this message as a banner..
-        // can also set background to light grey for testing in browser
-        <div>Open this as a custom dock in obs.</div>
-      ) : (
-        <div>
-          <div className="">
-            OBS JS API:{" "}
-            {typeof window !== "undefined" && window.obsstudio
-              ? window.obsstudio.pluginVersion
-              : "unavailable"}
-          </div>
-          <p>{connected ? "connected" : "disconnected"}</p>
-          <p>stream status: {JSON.stringify(streamStatus, null, 2)}</p>
-        </div>
-      )} */}
       {privkey ? (
         <div className="flex flex-col h-full">
           {
             {
               home: (
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
-                  <p>{connected ? "connected" : "disconnected"}</p>
+                  {/* <p>{connected ? "connected" : "disconnected"}</p> */}
                   <StreamDisplay pubkey={pubkey} eventConfig={eventConfig} />
                   <div className="flex gap-2">
                     <button
