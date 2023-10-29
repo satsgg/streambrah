@@ -5,6 +5,7 @@ import { getPublicKey } from "nostr-tools";
 
 export default function UserDisplay({ pubkey }: { pubkey: string }) {
   const { profile, isLoading } = useProfile(pubkey, DEFAULT_RELAYS);
+  console.debug("USER DISPLAY KEY", pubkey);
 
   return (
     <div className="flex">

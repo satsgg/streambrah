@@ -50,6 +50,11 @@ export const publishLiveEvent = async (
   };
   if (eventConfig.image) event.tags.push(["image", eventConfig.image]);
 
+  // add participants
+  eventConfig.p.forEach((p) => {
+    event.tags.push(["p", p]);
+  });
+
   console.log(event);
   const signedEvent = signEventPrivkey(event, privkey);
 
@@ -99,7 +104,7 @@ export type EventConfig = {
   status?: "planned" | "live" | "ended";
   currentParticipants?: string;
   totalParticipants?: string;
-  p?: string[];
+  p: string[];
   relays?: string[];
 };
 
@@ -109,4 +114,5 @@ export const DEFAULT_EVENT_CONFIG: EventConfig = {
   summary: "",
   streaming: "",
   status: "planned",
+  p: [],
 };

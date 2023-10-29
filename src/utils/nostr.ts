@@ -79,6 +79,17 @@ export const npubToHex = (npub: string) => {
   return nipData as string;
 };
 
+export const pubkeyValidator = (key: string) => {
+  if (key.startsWith("npub1")) {
+    if (!validNpubKey(key)) {
+      return false;
+    }
+  } else if (!validHexKey(key)) {
+    return false;
+  }
+  return true;
+};
+
 export const getZapAmountFromReceipt = (zapReceipt: NostrEvent<9735>) => {
   const bolt11 = zapReceipt.tags.find((t) => t[0] == "bolt11");
   if (!bolt11 || !bolt11[1]) return null;

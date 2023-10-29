@@ -7,6 +7,9 @@ import { useZodForm } from "@/utils/useZodForm";
 import { z } from "zod";
 import { FieldError } from "react-hook-form";
 import StreamDisplay from "./streamDisplay";
+import AddParticipantForm from "./addParticipantForm";
+import UserDisplay from "./userDisplay";
+import RemoveableParticipantForm from "./removeableParticipantForm";
 
 const Input = ({
   name,
@@ -41,22 +44,27 @@ const Input = ({
 const loadLocalStorageConfig = (): null | EventConfig => {
   if (typeof window === "undefined") return null;
   const storeConfig = localStorage.getItem("eventManagerConfig");
-  if (storeConfig) return JSON.parse(storeConfig);
+  if (!storeConfig) return null;
+  let config: EventConfig = JSON.parse(storeConfig);
 
-  return null;
+  return config;
 };
 
-// TODO: Hashtags, relays, participants
+// TODO: Hashtags, relays
 // use multiple pages instead of views
 export default function EventManager() {
   const [connected, setConnected] = useState(false);
-  const [view, setView] = useState<"home" | "settings">("home");
+  const [view, setView] = useState<"home" | "participants" | "settings">(
+    "home"
+  );
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
   const [eventConfig, setEventConfig] = useState<EventConfig>(
     loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
   );
   const obs = useRef(new OBSWebSocket());
+
+  console.debug("eventConfig", eventConfig);
 
   const {
     register,
@@ -80,7 +88,13 @@ export default function EventManager() {
     },
   });
 
-  const onSubmit = (data: EventConfig) => {
+  const onSubmit = (data: {
+    title: any;
+    summary: any;
+    d: any;
+    streaming: any;
+    image: any;
+  }) => {
     setEventConfig((prev) => {
       const newConfig = {
         ...prev,
@@ -138,6 +152,32 @@ export default function EventManager() {
     };
   }, [privkey]);
 
+  const setParticipants = (participant: string) => {
+    console.debug("setting participant", participant);
+    setEventConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        p: [...prev.p, participant],
+      };
+
+      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      return newConfig;
+    });
+  };
+
+  const removeParticipant = (participant: string) => {
+    console.debug("removing participant", participant);
+    setEventConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        p: prev.p.filter((p) => p !== participant),
+      };
+
+      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      return newConfig;
+    });
+  };
+
   return (
     <div className="h-screen bg-gray-800 overflow-auto text-white">
       {privkey ? (
@@ -148,7 +188,7 @@ export default function EventManager() {
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
                   {/* <p>{connected ? "connected" : "disconnected"}</p> */}
                   <StreamDisplay pubkey={pubkey} eventConfig={eventConfig} />
-                  <div className="flex gap-2">
+                  {/* <div className="flex gap-2">
                     <button
                       className="rounded bg-gray-600 px-2 py-1"
                       onClick={async () =>
@@ -169,7 +209,21 @@ export default function EventManager() {
                     >
                       End
                     </button>
-                  </div>
+                  </div> */}
+                </div>
+              ),
+              participants: (
+                <div className="flex flex-col w-full h-full gap-4 py-2 px-4 overflow-y-scroll">
+                  {eventConfig.p.map((value) => (
+                    <RemoveableParticipantForm
+                      participant={value}
+                      removeParticipant={removeParticipant}
+                    />
+                  ))}
+                  <AddParticipantForm
+                    participants={eventConfig.p}
+                    setParticipants={setParticipants}
+                  />
                 </div>
               ),
               settings: (
@@ -243,6 +297,28 @@ export default function EventManager() {
                 stroke="currentColor"
               >
                 <path d="M12.391 4.262a1 1 0 00-1.46.035l-6.177 6.919a1 1 0 00-.254.666V19.5a1 1 0 001 1h3a1 1 0 001-1V16a1 1 0 011-1h3a1 1 0 011 1v3.5a1 1 0 001 1h3a1 1 0 001-1v-7.591a1 1 0 00-.287-.7l-6.822-6.947z"></path>
+              </svg>
+            </button>
+
+            <button
+              className="bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
+              onClick={() => setView("participants")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                width={20}
+                height={20}
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+                />
               </svg>
             </button>
 
