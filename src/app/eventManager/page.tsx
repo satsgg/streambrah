@@ -64,7 +64,24 @@ export default function EventManager() {
   );
   const obs = useRef(new OBSWebSocket());
 
-  console.debug("eventConfig", eventConfig);
+  const bc = useRef(new BroadcastChannel("eventManager"));
+
+  useEffect(() => {
+    if (!privkey) return;
+    console.debug("awaiting wavman message...");
+    bc.current.onmessage = (event) => {
+      const type = event.data.type;
+      const value = event.data.value;
+      console.debug("channel message", type, value);
+      switch (type) {
+        case "wavman":
+          // need to remove previous and add new...
+          break;
+        default:
+          console.error("invalid event message");
+      }
+    };
+  }, [privkey]);
 
   const {
     register,
@@ -216,6 +233,7 @@ export default function EventManager() {
                 <div className="flex flex-col w-full h-full gap-4 py-2 px-4 overflow-y-scroll">
                   {eventConfig.p.map((value) => (
                     <RemoveableParticipantForm
+                      key={value}
                       participant={value}
                       removeParticipant={removeParticipant}
                     />
