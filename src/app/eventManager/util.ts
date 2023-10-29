@@ -50,18 +50,19 @@ export const publishLiveEvent = async (
   };
   if (eventConfig.image) event.tags.push(["image", eventConfig.image]);
 
-  // const signedEvent = signEventPrivkey(event, privkey);
+  console.log(event);
+  const signedEvent = signEventPrivkey(event, privkey);
 
-  // // publish
-  // if (!signedEvent) throw new Error("Failed to sign message");
-  // let ok = validateEvent(signedEvent);
-  // if (!ok) throw new Error("Invalid event");
-  // let veryOk = verifySignature(signedEvent);
-  // if (!veryOk) throw new Error("Invalid signature");
+  // publish
+  if (!signedEvent) throw new Error("Failed to sign message");
+  let ok = validateEvent(signedEvent);
+  if (!ok) throw new Error("Invalid event");
+  let veryOk = verifySignature(signedEvent);
+  if (!veryOk) throw new Error("Invalid signature");
 
-  // let pubs = Pool.publish(DEFAULT_RELAYS, signedEvent);
-  // await Promise.all(pubs);
-  // console.debug("pubs", pubs);
+  let pubs = Pool.publish(DEFAULT_RELAYS, signedEvent);
+  await Promise.all(pubs);
+  console.debug("pubs", pubs);
 
   return event;
 };

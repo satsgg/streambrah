@@ -38,18 +38,26 @@ const Input = ({
   );
 };
 
-// TODO: Hashtags, relays, participants
+const loadLocalStorageConfig = (): null | EventConfig => {
+  const storeConfig = localStorage.getItem("eventManagerConfig");
+  if (storeConfig) return JSON.parse(storeConfig);
 
+  return null;
+};
+
+// TODO: Hashtags, relays, participants
+// use multiple pages instead of views
 export default function EventManager() {
   const [connected, setConnected] = useState(false);
   const [view, setView] = useState<"home" | "settings">("home");
-  const [privkey, setPrivkey] = useState<string | null>("");
+  const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
   // TODO: Save config in local storage
-  const [eventConfig, setEventConfig] =
-    useState<EventConfig>(DEFAULT_EVENT_CONFIG);
+  const [eventConfig, setEventConfig] = useState<EventConfig>(
+    loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
+  );
   const [streamStatus, setStreamStatus] = useState<any>({});
-  // const obs = useRef(new OBSWebSocket());
+  const obs = useRef(new OBSWebSocket());
 
   const {
     register,
@@ -65,17 +73,17 @@ export default function EventManager() {
       image: z.string(),
     }),
     defaultValues: {
-      title: "",
-      summary: "",
-      d: "",
-      streaming: "",
-      image: "",
+      title: eventConfig.title ?? "",
+      summary: eventConfig.summary ?? "",
+      d: eventConfig.d ?? "",
+      streaming: eventConfig.streaming ?? "",
+      image: eventConfig.image ?? "",
     },
   });
 
   const onSubmit = (data: EventConfig) => {
     setEventConfig((prev) => {
-      return {
+      const newConfig = {
         ...prev,
         title: data.title,
         summary: data.summary,
@@ -83,38 +91,53 @@ export default function EventManager() {
         streaming: data.streaming,
         image: data.image,
       };
+
+      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+
+      return newConfig;
     });
-    console.debug("setting event config", data);
   };
 
-  // useEffect(() => {
-  //   const connect = async () => {
-  //     try {
-  //       console.debug("connecting");
-  //       // await obs.current.connect("ws://192.168.1.244", "password");
-  //       // await obs.current.connect("ws://192.168.1.244");
-  //       // TODO: If using password, prompt user for it...
-  //       await obs.current.connect();
-  //     } catch (error) {
-  //       console.error("error", error);
-  //     }
-  //   };
-  //   connect();
+  useEffect(() => {
+    if (!privkey) return;
+    const connect = async () => {
+      try {
+        console.debug("connecting");
+        // await obs.current.connect("ws://192.168.1.244", "password");
+        // await obs.current.connect("ws://192.168.1.244");
+        // TODO: If using password, prompt user for it...
+        await obs.current.connect();
+      } catch (error) {
+        console.error("error", error);
+      }
+    };
+    connect();
 
-  //   obs.current.on("ConnectionOpened", () => {
-  //     console.debug("connected!");
-  //     setConnected(true);
-  //   });
+    obs.current.on("ConnectionOpened", () => {
+      console.debug("connected!");
+      setConnected(true);
+    });
 
-  //   return () => {
-  //     // this breaks connection with react strict mode true
-  //     const disconnect = async () => {
-  //       await obs.current.disconnect();
-  //       setConnected(false);
-  //     };
-  //     disconnect();
-  //   };
-  // }, []);
+    obs.current.on("StreamStateChanged", async (event) => {
+      if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STARTED") {
+        console.debug("output started", event);
+        await publishLiveEvent(privkey, eventConfig, "live");
+      }
+      if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STOPPED") {
+        console.debug("output started", event);
+        await publishLiveEvent(privkey, eventConfig, "ended");
+      }
+    });
+
+    return () => {
+      // this breaks connection with react strict mode true
+      const disconnect = async () => {
+        await obs.current.disconnect();
+        setConnected(false);
+      };
+      disconnect();
+    };
+  }, [privkey]);
 
   // const getStreamStatus = async () => {
   //   if (!connected) return;
@@ -161,9 +184,8 @@ export default function EventManager() {
             {
               home: (
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
-                  <div className="">
-                    <StreamDisplay pubkey={pubkey} eventConfig={eventConfig} />
-                  </div>
+                  <p>{connected ? "connected" : "disconnected"}</p>
+                  <StreamDisplay pubkey={pubkey} eventConfig={eventConfig} />
                   <div className="flex gap-2">
                     <button
                       className="rounded bg-gray-600 px-2 py-1"
