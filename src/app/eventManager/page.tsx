@@ -39,6 +39,7 @@ const Input = ({
 };
 
 const loadLocalStorageConfig = (): null | EventConfig => {
+  if (typeof window === "undefined") return null;
   const storeConfig = localStorage.getItem("eventManagerConfig");
   if (storeConfig) return JSON.parse(storeConfig);
 
