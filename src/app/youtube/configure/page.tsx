@@ -176,7 +176,7 @@ export default function ConfigureNotifications() {
     }
     // const encodedPubkey = encodeURIComponent(hexPubkey);
     const encodedPubkey = hexPubkey;
-    const url = `http://localhost:3000/youtube?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
+    const url = `https://streambrah.com/youtube?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
       "&" + "relay" + "="
     )}`;
     console.log("url", url);

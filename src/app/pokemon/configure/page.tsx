@@ -176,13 +176,13 @@ export default function ConfigureNotifications() {
       hexPubkey = npubToHex(pubkey);
     }
     const encodedPubkey = encodeURIComponent(hexPubkey);
-    const url = `http://localhost:3001/pokemon?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
+    const url = `https://streambrah.com/pokemon?pubkey=${encodedPubkey}&relay=${encodedRelays.join(
       "&" + "relay" + "="
     )}`;
     console.log("url", url);
     setLink(url);
 
-    const queueUrl = `http://localhost:3001/pokemon/queue?relay=${encodedRelays.join(
+    const queueUrl = `https://streambrah.com/pokemon/queue?relay=${encodedRelays.join(
       "&" + "relay" + "="
     )}`;
 
