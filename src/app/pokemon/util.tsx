@@ -8,7 +8,7 @@ export enum Input {
   left = "KeyA",
   down = "KeyS",
   right = "KeyD",
-  start = "enter",
+  start = "Enter",
   select = "ShiftRight",
 }
 
