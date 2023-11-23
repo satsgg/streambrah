@@ -55,8 +55,20 @@ export default function Pokemon() {
 
   useEffect(() => {
     bcDock.current.onmessage = (event) => {
-      const input = event.data.input;
-      switch (input) {
+      // const input = event.data.input;
+      const action = event.data.action;
+      if (!action) return;
+
+      if (action === "input") {
+        const input = event.data.input;
+        console.log("adding input", input);
+        setInputs((prev) => {
+          return [...prev, input];
+        });
+        return;
+      }
+
+      switch (action) {
         case "play":
           WasmBoy.play();
           return;
@@ -67,6 +79,7 @@ export default function Pokemon() {
           downloadLocalState();
           return;
         case "load":
+          loadLocalState(event.data.data);
           return;
         default:
           break;
@@ -164,8 +177,9 @@ export default function Pokemon() {
       console.error("Cannot save. WasmBoy is not started");
       return;
     }
-    const shouldContinuePlaying = WasmBoy.isPlaying ? true : false;
-    const state = WasmBoy.saveState();
+    const shouldContinuePlaying = WasmBoy.isPlaying();
+    // console.debug("shouldContinuePlaying", shouldContinuePlaying);
+    const state = await WasmBoy.saveState();
 
     if (shouldContinuePlaying) {
       WasmBoy.play();
@@ -181,47 +195,53 @@ export default function Pokemon() {
     //   null, 4); // null, 4? helpful for us?
   };
 
-  const loadLocalState = () => {
-    inputStateFile.current?.click();
-  };
-
-  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const loadLocalState = async (jsonState: string) => {
+    console.debug("loadlocalstate");
+    // inputStateFile.current?.click();
+    const state = jsonToState(jsonState);
+    await WasmBoy.loadState(state);
+    WasmBoy.play();
     setTimeout(() => {
-      if (!WasmBoy.isLoadedAndStarted()) {
-        // TODO: Should require user to load and start WasmBoy before displaying
-        // any options
-        // maybe just a big start button or something they have to click first
-        console.error("Cannot load state. WasmBoy isn't started");
-        return;
-      }
-      if (!event.target.files || !event.target.files[0]) {
-        console.error("no file available");
-        return;
-      }
-      const fileObj = event.target.files[0];
-      console.debug("loaded file", fileObj);
-      const reader = new FileReader();
-
-      reader.onload = async (e: ProgressEvent<FileReader>) => {
-        if (!e.target) {
-          console.error("Failed to load state file");
-          return;
-        }
-        const state = jsonToState(e.target.result);
-        await WasmBoy.loadState(state);
-      };
-      reader.readAsText(fileObj);
+      WasmBoy.pause();
     }, 50);
   };
+
+  // const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setTimeout(() => {
+  //     if (!WasmBoy.isLoadedAndStarted()) {
+  //       // TODO: Should require user to load and start WasmBoy before displaying
+  //       // any options
+  //       // maybe just a big start button or something they have to click first
+  //       console.error("Cannot load state. WasmBoy isn't started");
+  //       return;
+  //     }
+  //     if (!event.target.files || !event.target.files[0]) {
+  //       console.error("no file available");
+  //       return;
+  //     }
+  //     const fileObj = event.target.files[0];
+  //     console.debug("loaded file", fileObj);
+  //     const reader = new FileReader();
+
+  //     reader.onload = async (e: ProgressEvent<FileReader>) => {
+  //       if (!e.target) {
+  //         console.error("Failed to load state file");
+  //         return;
+  //       }
+  //       const state = jsonToState(e.target.result);
+  //       await WasmBoy.loadState(state);
+  //     };
+  //     reader.readAsText(fileObj);
+  //   }, 50);
+  // };
 
   return (
     <div className="fixed w-full h-full justify-center">
       <div className="flex h-full justify-center">
         <div className="flex h-full">
           <canvas width="100%" height="100%" id="wasmboy-canvas" />
-          {!isPlaying && (
+          {/* {!isPlaying && (
             <div className="fixed flex flex-col gap-y-2 bg-slate-800 text-white">
-              {/* TODO: remove all of this, do it in js */}
               <input
                 type="file"
                 id="file"
@@ -232,7 +252,7 @@ export default function Pokemon() {
                 className="hidden"
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

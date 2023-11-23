@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
@@ -7,6 +7,9 @@ const partialInput = {
 };
 
 export default function PokemonDock() {
+  const [saveState, setSaveState] = useState("");
+  const [loadState, setLoadState] = useState("");
+
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
   const sendInput = (input: string) => {
     const fullInput = {
@@ -14,7 +17,17 @@ export default function PokemonDock() {
       id: (Math.random() + 1).toString(36).substring(2),
       input: input,
     };
-    bc.current.postMessage(fullInput);
+    bc.current.postMessage({
+      action: "input",
+      input: fullInput,
+    });
+  };
+
+  const sendAction = (action: string, data?: string) => {
+    bc.current.postMessage({
+      action: action,
+      data: data,
+    });
   };
 
   useEffect(() => {
@@ -22,23 +35,14 @@ export default function PokemonDock() {
       const type = event.data.type;
       switch (type) {
         case "save":
-          console.debug("saving state to clipboard");
-          navigator.clipboard.writeText(event.data.data);
+          console.debug("event.data", event.data);
+          // navigator.clipboard.writeText(event.data.data);
+          setSaveState(event.data.data);
           return;
         default:
           break;
       }
     };
-  }, []);
-  useEffect(() => {
-    const doit = async () => {
-      console.debug("quering");
-      const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
-      const permissionStatus = await navigator.permissions.query(queryOpts);
-      // Will be 'granted', 'denied' or 'prompt':
-      console.log(permissionStatus.state);
-    };
-    doit();
   }, []);
   // TODO:
   // Input execution timer option
@@ -49,28 +53,46 @@ export default function PokemonDock() {
       <div className="flex flex-wrap gap-x-2 gap-y-2">
         <button
           className="bg-gray-500 border rounded px-2 py-1"
-          onClick={() => sendInput("play")}
+          onClick={() => sendAction("play")}
         >
           Play
         </button>
         <button
           className="bg-gray-500 border rounded px-2 py-1"
-          onClick={() => sendInput("pause")}
+          onClick={() => sendAction("pause")}
         >
           Pause
         </button>
         <button
           className="bg-gray-500 border rounded px-2 py-1"
-          onClick={() => sendInput("save")}
+          onClick={() => sendAction("save")}
         >
           Save
         </button>
+        <label>
+          <input
+            readOnly
+            className="text-black"
+            type="text"
+            value={saveState}
+          />
+          save state text
+        </label>
         <button
           className="bg-gray-500 border rounded px-2 py-1"
-          onClick={() => sendInput("load")}
+          disabled={loadState === ""}
+          onClick={() => sendAction("load", loadState)}
         >
           Load
         </button>
+        <label>
+          <input
+            className="text-black"
+            value={loadState}
+            onChange={(e) => setLoadState(e.target.value)}
+          />
+          load save state
+        </label>
         <button
           className="bg-gray-500 border rounded px-2 py-1"
           onClick={() => sendInput("a")}
