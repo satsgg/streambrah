@@ -34,6 +34,15 @@ export const parseInput = (event: NostrEvent): InputAndAuthor | null => {
   };
 };
 
+export const executeMove = (input: string) => {
+  console.log("executing input: " + input);
+  window.dispatchEvent(new KeyboardEvent("keydown", { code: input }));
+  setTimeout(
+    () => window.dispatchEvent(new KeyboardEvent("keyup", { code: input })),
+    100
+  );
+};
+
 export const stateToJson = (state: any) => {
   const jsonState = JSON.stringify(state, (key, value) => {
     if (value instanceof Uint8Array) {

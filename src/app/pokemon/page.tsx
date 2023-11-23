@@ -6,7 +6,7 @@ import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
-import { Input, jsonToState, stateToJson } from "./util";
+import { Input, executeMove, jsonToState, stateToJson } from "./util";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -55,14 +55,23 @@ export default function Pokemon() {
 
   useEffect(() => {
     bcDock.current.onmessage = (event) => {
-      if (event.data.input === "play") {
-        WasmBoy.play();
-        return;
+      const input = event.data.input;
+      switch (input) {
+        case "play":
+          WasmBoy.play();
+          return;
+        case "pause":
+          WasmBoy.pause();
+          return;
+        case "save":
+          downloadLocalState();
+          return;
+        case "load":
+          return;
+        default:
+          break;
       }
-      if (event.data.input === "pause") {
-        WasmBoy.pause();
-        return;
-      }
+
       console.log("adding input", event.data);
       setInputs((prev) => {
         return [...prev, event.data];
@@ -94,15 +103,6 @@ export default function Pokemon() {
     await WasmBoy.loadROM(rom);
     // NOTE: Don't start until we initialize the audio context
     // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. <URL>
-  };
-
-  const executeMove = (input: string) => {
-    console.log("executing input: " + input);
-    window.dispatchEvent(new KeyboardEvent("keydown", { code: input }));
-    setTimeout(
-      () => window.dispatchEvent(new KeyboardEvent("keyup", { code: input })),
-      100
-    );
   };
 
   useEffect(() => {
@@ -157,30 +157,29 @@ export default function Pokemon() {
   //   await WasmBoy.loadState(saveState);
   // };
 
-  const downloadLocalState = async (
-    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
-  ) => {
-    event.preventDefault();
+  const downloadLocalState = async () => {
+    console.debug("downloading local state");
     // make sure paused already?
     if (!WasmBoy.isLoadedAndStarted()) {
       console.error("Cannot save. WasmBoy is not started");
       return;
     }
-    const state = await WasmBoy.saveState();
+    const shouldContinuePlaying = WasmBoy.isPlaying ? true : false;
+    const state = WasmBoy.saveState();
+
+    if (shouldContinuePlaying) {
+      WasmBoy.play();
+    }
+
     const jsonState = stateToJson(state);
+    console.debug("jsonState", jsonState);
+    bcDock.current.postMessage({
+      type: "save",
+      data: jsonState,
+    });
     // output = JSON.stringify({states: this.state.data},
     //   null, 4); // null, 4? helpful for us?
-
-    const blob = new Blob([jsonState]);
-    const fileDownloadUrl = URL.createObjectURL(blob);
-    setStateDownloadUrl(fileDownloadUrl);
   };
-
-  useEffect(() => {
-    if (stateDownloadUrl === "") return;
-    saveStateFile.current?.click();
-    URL.revokeObjectURL(stateDownloadUrl);
-  }, [stateDownloadUrl]);
 
   const loadLocalState = () => {
     inputStateFile.current?.click();
@@ -222,18 +221,7 @@ export default function Pokemon() {
           <canvas width="100%" height="100%" id="wasmboy-canvas" />
           {!isPlaying && (
             <div className="fixed flex flex-col gap-y-2 bg-slate-800 text-white">
-              <button onClick={() => loadLocalState()}>
-                Load local state file
-              </button>
-              <button onClick={async (e) => downloadLocalState(e)}>
-                Save state file locally
-              </button>
-              <a
-                download="pokemonSaveState.json"
-                href={stateDownloadUrl}
-                ref={saveStateFile}
-                className="hidden"
-              />
+              {/* TODO: remove all of this, do it in js */}
               <input
                 type="file"
                 id="file"

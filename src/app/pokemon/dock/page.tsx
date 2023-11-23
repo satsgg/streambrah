@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
@@ -17,12 +17,25 @@ export default function PokemonDock() {
     bc.current.postMessage(fullInput);
   };
 
+  useEffect(() => {
+    bc.current.onmessage = (event) => {
+      const type = event.data.type;
+      switch (type) {
+        case "save":
+          console.debug("saving state to clipboard");
+          navigator.clipboard.writeText(event.data.data);
+          return;
+        default:
+          break;
+      }
+    };
+  }, []);
   // TODO:
   // Input execution timer option
   // save state, load state
   // turbo button?
   return (
-    <div className="w-full h-screen bg-gray-700 text-white text-sm whitespace-nowrap p-2">
+    <div className="w-full h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
       <div className="flex flex-wrap gap-x-2 gap-y-2">
         <button
           className="bg-gray-500 border rounded px-2 py-1"
@@ -35,6 +48,18 @@ export default function PokemonDock() {
           onClick={() => sendInput("pause")}
         >
           Pause
+        </button>
+        <button
+          className="bg-gray-500 border rounded px-2 py-1"
+          onClick={() => sendInput("save")}
+        >
+          Save
+        </button>
+        <button
+          className="bg-gray-500 border rounded px-2 py-1"
+          onClick={() => sendInput("load")}
+        >
+          Load
         </button>
         <button
           className="bg-gray-500 border rounded px-2 py-1"
