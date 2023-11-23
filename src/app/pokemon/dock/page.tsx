@@ -30,6 +30,16 @@ export default function PokemonDock() {
       }
     };
   }, []);
+  useEffect(() => {
+    const doit = async () => {
+      console.debug("quering");
+      const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
+      const permissionStatus = await navigator.permissions.query(queryOpts);
+      // Will be 'granted', 'denied' or 'prompt':
+      console.log(permissionStatus.state);
+    };
+    doit();
+  }, []);
   // TODO:
   // Input execution timer option
   // save state, load state
