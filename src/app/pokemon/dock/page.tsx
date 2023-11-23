@@ -65,71 +65,75 @@ export default function PokemonDock() {
   // save state, load state
   // turbo button?
   return (
-    <div className="flex flex-col justify-between overflow-y-hidden h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
+    <div className="flex flex-col justify-between h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
       {
         {
           home: (
-            <div className="flex flex-wrap gap-x-2 gap-y-2">
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendAction("play")}
-              >
-                Play
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendAction("pause")}
-              >
-                Pause
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("a")}
-              >
-                A
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("b")}
-              >
-                B
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("up")}
-              >
-                Up
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("left")}
-              >
-                Left
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("down")}
-              >
-                Down
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("right")}
-              >
-                Right
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("start")}
-              >
-                Start
-              </button>
-              <button
-                className="bg-gray-500 rounded px-2 py-1"
-                onClick={() => sendInput("select")}
-              >
-                Select
-              </button>
+            <div className="flex flex-col gap-y-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendAction("play")}
+                >
+                  Play
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendAction("pause")}
+                >
+                  Pause
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-x-2 gap-y-2">
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("a")}
+                >
+                  A
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("b")}
+                >
+                  B
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("up")}
+                >
+                  Up
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("left")}
+                >
+                  Left
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("down")}
+                >
+                  Down
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("right")}
+                >
+                  Right
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("start")}
+                >
+                  Start
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("select")}
+                >
+                  Select
+                </button>
+              </div>
             </div>
           ),
           state: (
