@@ -34,14 +34,16 @@ WasmBoy.ResponsiveGamepad.onInputsChange(
   }
 );
 
+// TODO: Get initial settings on mount from localstorage
+// if nothing there.. use defaults
+// receive new settings from bc channel
+// update timers based off settings
+
 export default function Pokemon() {
   const [isPlaying, setIsPlaying] = useState(false);
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
   const relays = searchParams.getAll("relay");
-  const [stateDownloadUrl, setStateDownloadUrl] = useState<string>("");
-  const inputStateFile = useRef<HTMLInputElement | null>(null);
-  const saveStateFile = useRef<HTMLAnchorElement | null>(null);
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
 
@@ -55,7 +57,6 @@ export default function Pokemon() {
 
   useEffect(() => {
     bcDock.current.onmessage = (event) => {
-      // const input = event.data.input;
       const action = event.data.action;
       if (!action) return;
 

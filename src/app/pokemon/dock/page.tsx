@@ -1,15 +1,53 @@
 "use client";
+import { useZodForm } from "@/utils/useZodForm";
 import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
   amount: 0,
 };
 
+type Settings = {
+  inputTimer: number;
+  autoSave: boolean;
+  autoSaveTimer: number;
+};
+
 export default function PokemonDock() {
   const [view, setView] = useState<"home" | "state" | "settings">("home");
   const [saveState, setSaveState] = useState("");
   const [loadState, setLoadState] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    setValue,
+    getValues,
+    watch,
+    reset,
+    formState: { errors, isDirty, isValid },
+  } = useZodForm({
+    mode: "onChange",
+    schema: z.object({
+      inputTimer: z.number().positive(),
+      autoSaveTimer: z.number().positive(),
+      autoSave: z.boolean(),
+    }),
+    defaultValues: {
+      inputTimer: 2000,
+      autoSaveTimer: 1,
+      autoSave: true,
+    },
+  });
+
+  const onSubmit = (data: Settings) => {
+    console.debug("onSubmit", data);
+    // update localstorage
+
+    // send over bc channel
+  };
 
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
   const sendInput = (input: string) => {
@@ -37,7 +75,6 @@ export default function PokemonDock() {
       switch (type) {
         case "save":
           console.debug("event.data", event.data);
-          // navigator.clipboard.writeText(event.data.data);
           setSaveState(event.data.data);
           return;
         default:
@@ -49,7 +86,7 @@ export default function PokemonDock() {
   const saveStateToDate = (text: string) => {
     const json = JSON.parse(text);
     if (!json.date) return "";
-    const options = {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -60,9 +97,8 @@ export default function PokemonDock() {
     };
     return new Date(json.date).toLocaleDateString("en-us", options);
   };
+
   // TODO:
-  // Input execution timer option
-  // save state, load state
   // turbo button?
   return (
     <div className="flex flex-col justify-between h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
@@ -142,7 +178,7 @@ export default function PokemonDock() {
                 <div className="flex flex-col">
                   <input
                     readOnly
-                    className="text-black h-6 rounded"
+                    className="rounded bg-gray-600 h-8 px-2"
                     placeholder="copy after saving..."
                     type="text"
                     value={saveState}
@@ -162,7 +198,8 @@ export default function PokemonDock() {
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col">
                   <input
-                    className="text-black rounded h-6"
+                    type="text"
+                    className="rounded bg-gray-600 h-8 px-2"
                     placeholder="paste save state text here..."
                     value={loadState}
                     onChange={(e) => setLoadState(e.target.value)}
@@ -181,7 +218,66 @@ export default function PokemonDock() {
               </div>
             </div>
           ),
-          settings: <div>settings</div>,
+          settings: (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
+                <label>Input execution timer in ms</label>
+                <input
+                  type="number"
+                  min={1}
+                  className={`
+                    focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none
+                    ${errors.inputTimer && "border-red-600"} 
+                  `}
+                  {...register("inputTimer", {
+                    valueAsNumber: true,
+                  })}
+                />
+                {errors.inputTimer && (
+                  <p className="text-xs text-red-600">
+                    {errors.inputTimer.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <label>Autosave interval in minutes</label>
+                <input
+                  type="number"
+                  min={1}
+                  className={`
+                    focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none
+                    ${errors.autoSaveTimer && "border-red-500"} 
+                  `}
+                  {...register("autoSaveTimer", {
+                    valueAsNumber: true,
+                  })}
+                />
+                {errors.autoSaveTimer && (
+                  <p className="text-xs text-red-600">
+                    {errors.autoSaveTimer.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <label>Enable autosave</label>
+                <input
+                  className="w-4 h-4"
+                  type="checkbox"
+                  {...register("autoSave")}
+                />
+              </div>
+
+              <button
+                className="bg-gray-600 enabled:hover:bg-gray-500 rounded px-2 py-1 mt-2"
+                disabled={!isValid}
+                onClick={handleSubmit(onSubmit)}
+              >
+                Update
+              </button>
+            </div>
+          ),
         }[view]
       }
       <div className="flex justify-center gap-4 mt-auto py-2">
@@ -218,8 +314,8 @@ export default function PokemonDock() {
             fill="none"
           >
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M18.1716 1C18.702 1 19.2107 1.21071 19.5858 1.58579L22.4142 4.41421C22.7893 4.78929 23 5.29799 23 5.82843V20C23 21.6569 21.6569 23 20 23H4C2.34315 23 1 21.6569 1 20V4C1 2.34315 2.34315 1 4 1H18.1716ZM4 3C3.44772 3 3 3.44772 3 4V20C3 20.5523 3.44772 21 4 21L5 21L5 15C5 13.3431 6.34315 12 8 12L16 12C17.6569 12 19 13.3431 19 15V21H20C20.5523 21 21 20.5523 21 20V6.82843C21 6.29799 20.7893 5.78929 20.4142 5.41421L18.5858 3.58579C18.2107 3.21071 17.702 3 17.1716 3H17V5C17 6.65685 15.6569 8 14 8H10C8.34315 8 7 6.65685 7 5V3H4ZM17 21V15C17 14.4477 16.5523 14 16 14L8 14C7.44772 14 7 14.4477 7 15L7 21L17 21ZM9 3H15V5C15 5.55228 14.5523 6 14 6H10C9.44772 6 9 5.55228 9 5V3Z"
               fill="#ffffff"
             />
