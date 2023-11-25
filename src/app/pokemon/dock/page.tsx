@@ -224,7 +224,7 @@ export default function PokemonDock() {
               </div>
 
               <div className="flex flex-col">
-                <label className="text-xs">auto save</label>
+                <label className="text-xs">Auto save</label>
                 <input
                   readOnly
                   className="focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none"
@@ -281,7 +281,7 @@ export default function PokemonDock() {
               </div>
 
               <div className="flex gap-2 items-center">
-                <label>Enable autosave</label>
+                <label>Enable auto save</label>
                 <input
                   className="w-4 h-4"
                   type="checkbox"
