@@ -3,9 +3,11 @@ import { useZodForm } from "@/utils/useZodForm";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import {
+  AUTOSAVE_KEY,
   DEFAULT_SETTINGS,
   SETTINGS_KEY,
   Settings,
+  getAutoSaveFromLS,
   getSettingsFromLS,
 } from "../util";
 
@@ -18,16 +20,13 @@ export default function PokemonDock() {
   const [view, setView] = useState<"home" | "state" | "settings">("home");
   const [saveState, setSaveState] = useState("");
   const [loadState, setLoadState] = useState("");
+  const [autoSaveState, setAutoSaveState] = useState("");
 
   const {
     register,
     handleSubmit,
-    setError,
-    setValue,
-    getValues,
-    watch,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
     schema: z.object({
@@ -39,8 +38,8 @@ export default function PokemonDock() {
   });
 
   useEffect(() => {
-    const defaultSettings = getSettingsFromLS();
-    reset(defaultSettings);
+    reset(getSettingsFromLS());
+    setAutoSaveState(getAutoSaveFromLS());
   }, []);
 
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
@@ -82,6 +81,10 @@ export default function PokemonDock() {
           console.debug("event.data", event.data);
           setSaveState(event.data.data);
           return;
+        case "autoSave":
+          console.debug("autoSave", event.data);
+          window.localStorage.setItem(AUTOSAVE_KEY, event.data.data);
+          setAutoSaveState(event.data.data);
         default:
           break;
       }
@@ -103,8 +106,6 @@ export default function PokemonDock() {
     return new Date(json.date).toLocaleDateString("en-us", options);
   };
 
-  // TODO:
-  // turbo button?
   return (
     <div className="flex flex-col justify-between h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
       {
@@ -178,7 +179,7 @@ export default function PokemonDock() {
             </div>
           ),
           state: (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 overflow-auto">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col">
                   <input
@@ -220,6 +221,20 @@ export default function PokemonDock() {
                 >
                   Load
                 </button>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-xs">auto save</label>
+                <input
+                  readOnly
+                  className="focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none"
+                  placeholder="auto save state"
+                  type="text"
+                  value={autoSaveState}
+                />
+                <label className="text-xs">
+                  {autoSaveState ? saveStateToDate(autoSaveState) : ""}
+                </label>
               </div>
             </div>
           ),
@@ -285,7 +300,7 @@ export default function PokemonDock() {
           ),
         }[view]
       }
-      <div className="flex justify-center gap-4 mt-auto py-2">
+      <div className="flex justify-center gap-4 mt-auto">
         <button
           className="bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
           onClick={() => setView("home")}

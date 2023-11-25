@@ -155,16 +155,10 @@ export default function Pokemon() {
   useEffect(() => {
     if (!isPlaying || !settings.autoSave) return;
     const saveInterval = setInterval(async () => {
-      console.debug("autosaving", settings.autoSaveTimer);
-      // TODO: Fix auto save to local storage
-      // const saveState = await WasmBoy.saveState();
-      // saveGameState(saveState);
-      // WasmBoy.play();
+      autoSaveState();
     }, settings.autoSaveTimer * 60 * 1000);
-    console.debug("saveInterval", saveInterval);
 
     return () => {
-      console.debug("clearing autosave");
       clearInterval(saveInterval);
     };
   }, [isPlaying, settings.autoSave, settings.autoSaveTimer]);
@@ -226,6 +220,21 @@ export default function Pokemon() {
     setTimeout(() => {
       WasmBoy.pause();
     }, 50);
+  };
+
+  const autoSaveState = async () => {
+    if (!WasmBoy.isLoadedAndStarted()) {
+      console.error("Cannot save. WasmBoy is not started");
+      return;
+    }
+    const state = await WasmBoy.saveState();
+    WasmBoy.play();
+
+    const jsonState = stateToJson(state);
+    bcDock.current.postMessage({
+      type: "autoSave",
+      data: jsonState,
+    });
   };
 
   return (

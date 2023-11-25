@@ -90,6 +90,7 @@ export type Settings = {
 };
 
 export const SETTINGS_KEY = "pokemonSettings";
+export const AUTOSAVE_KEY = "pokemonAutoSave";
 
 export const DEFAULT_SETTINGS: Settings = {
   inputTimer: 2000,
@@ -102,4 +103,10 @@ export const getSettingsFromLS = () => {
   if (!settingsJson) return DEFAULT_SETTINGS;
 
   return JSON.parse(settingsJson);
+};
+
+export const getAutoSaveFromLS = () => {
+  const autoSave = window.localStorage.getItem(AUTOSAVE_KEY);
+  if (!autoSave) return "";
+  return autoSave;
 };
