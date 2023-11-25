@@ -2,16 +2,16 @@
 import { useZodForm } from "@/utils/useZodForm";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import {
+  DEFAULT_SETTINGS,
+  SETTINGS_KEY,
+  Settings,
+  getSettingsFromLS,
+} from "../util";
 
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
   amount: 0,
-};
-
-type Settings = {
-  inputTimer: number;
-  autoSave: boolean;
-  autoSaveTimer: number;
 };
 
 export default function PokemonDock() {
@@ -35,21 +35,16 @@ export default function PokemonDock() {
       autoSaveTimer: z.number().positive(),
       autoSave: z.boolean(),
     }),
-    defaultValues: {
-      inputTimer: 2000,
-      autoSaveTimer: 1,
-      autoSave: true,
-    },
+    defaultValues: DEFAULT_SETTINGS,
   });
 
-  const onSubmit = (data: Settings) => {
-    console.debug("onSubmit", data);
-    // update localstorage
-
-    // send over bc channel
-  };
+  useEffect(() => {
+    const defaultSettings = getSettingsFromLS();
+    reset(defaultSettings);
+  }, []);
 
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
+
   const sendInput = (input: string) => {
     const fullInput = {
       ...partialInput,
@@ -65,6 +60,16 @@ export default function PokemonDock() {
   const sendAction = (action: string, data?: string) => {
     bc.current.postMessage({
       action: action,
+      data: data,
+    });
+  };
+
+  const onSubmit = (data: Settings) => {
+    console.debug("onSubmit", data);
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+
+    bc.current.postMessage({
+      action: "settings",
       data: data,
     });
   };
@@ -178,7 +183,7 @@ export default function PokemonDock() {
                 <div className="flex flex-col">
                   <input
                     readOnly
-                    className="rounded bg-gray-600 h-8 px-2"
+                    className="focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none"
                     placeholder="copy after saving..."
                     type="text"
                     value={saveState}
@@ -199,7 +204,7 @@ export default function PokemonDock() {
                 <div className="flex flex-col">
                   <input
                     type="text"
-                    className="rounded bg-gray-600 h-8 px-2"
+                    className="focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none"
                     placeholder="paste save state text here..."
                     value={loadState}
                     onChange={(e) => setLoadState(e.target.value)}

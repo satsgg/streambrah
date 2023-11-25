@@ -6,7 +6,15 @@ import { WasmBoy } from "wasmboy";
 import rom from "@/assets/Pokemon-Blue.gb";
 import { useSearchParams } from "next/navigation";
 import { useInputQueue } from "./useInputQueue";
-import { Input, executeMove, jsonToState, stateToJson } from "./util";
+import {
+  DEFAULT_SETTINGS,
+  Input,
+  Settings,
+  executeMove,
+  getSettingsFromLS,
+  jsonToState,
+  stateToJson,
+} from "./util";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -44,8 +52,15 @@ export default function Pokemon() {
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
   const relays = searchParams.getAll("relay");
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
   const { inputs, setInputs } = useInputQueue(pubkey, relays);
+
+  useEffect(() => {
+    const settings = getSettingsFromLS();
+    console.debug("settings", settings);
+    setSettings(settings);
+  }, []);
 
   const bcQueue = useRef(new BroadcastChannel("pokemon-inputs"));
   const bcDock = useRef(new BroadcastChannel("pokemon-dock"));
@@ -82,14 +97,12 @@ export default function Pokemon() {
         case "load":
           loadLocalState(event.data.data);
           return;
+        case "settings":
+          setSettings(event.data.data);
+          return;
         default:
           break;
       }
-
-      console.log("adding input", event.data);
-      setInputs((prev) => {
-        return [...prev, event.data];
-      });
     };
   }, []);
 
@@ -121,6 +134,7 @@ export default function Pokemon() {
 
   useEffect(() => {
     if (!isPlaying) return;
+    console.debug("isPlaying", isPlaying, "inputTimer", settings.inputTimer);
     const inputInterval = setInterval(() => {
       setInputs((prev) => {
         if (prev.length == 0) return [];
@@ -131,20 +145,29 @@ export default function Pokemon() {
         executeMove(input);
         return prev.slice(1);
       });
-    }, 2000);
+    }, settings.inputTimer);
 
+    return () => {
+      clearInterval(inputInterval);
+    };
+  }, [isPlaying, settings.inputTimer]);
+
+  useEffect(() => {
+    if (!isPlaying || !settings.autoSave) return;
     const saveInterval = setInterval(async () => {
+      console.debug("autosaving", settings.autoSaveTimer);
       // TODO: Fix auto save to local storage
       // const saveState = await WasmBoy.saveState();
       // saveGameState(saveState);
       // WasmBoy.play();
-    }, 3000);
+    }, settings.autoSaveTimer * 60 * 1000);
+    console.debug("saveInterval", saveInterval);
 
     return () => {
-      clearInterval(inputInterval);
+      console.debug("clearing autosave");
       clearInterval(saveInterval);
     };
-  }, [isPlaying]);
+  }, [isPlaying, settings.autoSave, settings.autoSaveTimer]);
 
   const handleWasmBoyIsPlayingChange = () => {
     // Set timeout is temporary fix for isPlaying() bug
@@ -192,8 +215,6 @@ export default function Pokemon() {
       type: "save",
       data: jsonState,
     });
-    // output = JSON.stringify({states: this.state.data},
-    //   null, 4); // null, 4? helpful for us?
   };
 
   const loadLocalState = async (jsonState: string) => {
@@ -207,53 +228,11 @@ export default function Pokemon() {
     }, 50);
   };
 
-  // const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   setTimeout(() => {
-  //     if (!WasmBoy.isLoadedAndStarted()) {
-  //       // TODO: Should require user to load and start WasmBoy before displaying
-  //       // any options
-  //       // maybe just a big start button or something they have to click first
-  //       console.error("Cannot load state. WasmBoy isn't started");
-  //       return;
-  //     }
-  //     if (!event.target.files || !event.target.files[0]) {
-  //       console.error("no file available");
-  //       return;
-  //     }
-  //     const fileObj = event.target.files[0];
-  //     console.debug("loaded file", fileObj);
-  //     const reader = new FileReader();
-
-  //     reader.onload = async (e: ProgressEvent<FileReader>) => {
-  //       if (!e.target) {
-  //         console.error("Failed to load state file");
-  //         return;
-  //       }
-  //       const state = jsonToState(e.target.result);
-  //       await WasmBoy.loadState(state);
-  //     };
-  //     reader.readAsText(fileObj);
-  //   }, 50);
-  // };
-
   return (
     <div className="fixed w-full h-full justify-center">
       <div className="flex h-full justify-center">
         <div className="flex h-full">
           <canvas width="100%" height="100%" id="wasmboy-canvas" />
-          {/* {!isPlaying && (
-            <div className="fixed flex flex-col gap-y-2 bg-slate-800 text-white">
-              <input
-                type="file"
-                id="file"
-                accept=".json"
-                multiple={false}
-                ref={inputStateFile}
-                onChange={handleFileInput}
-                className="hidden"
-              />
-            </div>
-          )} */}
         </div>
       </div>
     </div>

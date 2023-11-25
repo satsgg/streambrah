@@ -1,3 +1,4 @@
+"use client";
 import { Event as NostrEvent } from "nostr-tools";
 
 // TODO: Start isn't working. Need to test select too
@@ -80,4 +81,25 @@ export const jsonToState = (jsonSaveState: any) => {
     );
   }
   return saveState;
+};
+
+export type Settings = {
+  inputTimer: number;
+  autoSaveTimer: number;
+  autoSave: boolean;
+};
+
+export const SETTINGS_KEY = "pokemonSettings";
+
+export const DEFAULT_SETTINGS: Settings = {
+  inputTimer: 2000,
+  autoSaveTimer: 10,
+  autoSave: true,
+};
+
+export const getSettingsFromLS = () => {
+  const settingsJson = window.localStorage.getItem(SETTINGS_KEY);
+  if (!settingsJson) return DEFAULT_SETTINGS;
+
+  return JSON.parse(settingsJson);
 };
