@@ -25,7 +25,7 @@ export const InputDisplay = ({
           />
         )}
         <p className="w-full">
-          {fmtMsg(displayName(input.pubkey, profile), 20)}
+          {!isLoading && fmtMsg(displayName(input.pubkey, profile), 20)}
         </p>
       </div>
       <p>{input.input}</p>
