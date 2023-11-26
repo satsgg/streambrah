@@ -10,7 +10,11 @@ const testInput = {
   amount: 0,
 };
 
-export const useInputQueue = (pubkey: string | null, relays: string[]) => {
+export const useInputQueue = (
+  pubkey: string | null,
+  d: string | null,
+  relays: string[]
+) => {
   const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
   // const [inputs, setInputs] = useState<InputAndAuthor[]>(
   //   Array(100).fill(testInput)
@@ -18,12 +22,12 @@ export const useInputQueue = (pubkey: string | null, relays: string[]) => {
   const now = useRef(Math.floor(Date.now() / 1000));
 
   useEffect(() => {
-    if (!pubkey || relays?.length == 0) return;
-    // TODO: chat zaps
+    if (!pubkey || !d || relays?.length == 0) return;
+    console.debug("subscribing for inputs", pubkey, d, relays);
     let sub = Pool.sub(relays, [
       {
-        kinds: [1311],
-        "#a": [`30311:${pubkey}:abcajfkfufjelkj12394`],
+        kinds: [1311, 9735],
+        "#a": [`30311:${pubkey}:${d}`],
         since: now.current,
       },
     ]);

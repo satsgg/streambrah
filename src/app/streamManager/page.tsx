@@ -4,7 +4,6 @@ import OBSWebSocket from "obs-websocket-js";
 import PrivkeyForm from "./privkeyForm";
 import {
   DEFAULT_EVENT_CONFIG,
-  EventConfig,
   publishLiveEvent,
   publishNowPlaying,
 } from "./util";
@@ -14,6 +13,8 @@ import { FieldError } from "react-hook-form";
 import StreamDisplay from "./streamDisplay";
 import AddParticipantForm from "./addParticipantForm";
 import RemoveableParticipantForm from "./removeableParticipantForm";
+import { STREAM_CONFIG_CHANNEL, STREAM_CONFIG_KEY } from "../constants";
+import { StreamConfig } from "../types";
 
 const Input = ({
   name,
@@ -45,11 +46,11 @@ const Input = ({
   );
 };
 
-const loadLocalStorageConfig = (): null | EventConfig => {
+const loadLocalStorageConfig = (): StreamConfig | null => {
   if (typeof window === "undefined") return null;
-  const storeConfig = localStorage.getItem("eventManagerConfig");
+  const storeConfig = localStorage.getItem(STREAM_CONFIG_KEY);
   if (!storeConfig) return null;
-  let config: EventConfig = JSON.parse(storeConfig);
+  let config: StreamConfig = JSON.parse(storeConfig);
   config.p = [];
 
   return config;
@@ -64,12 +65,23 @@ export default function EventManager() {
   );
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
-  const [eventConfig, setEventConfig] = useState<EventConfig>(
+  const [streamConfig, setStreamConfig] = useState<StreamConfig>(
     loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
   );
+
+  useEffect(() => {
+    if (streamConfig.pubkey === pubkey) return;
+    setStreamConfig((prev) => {
+      return {
+        ...prev,
+        pubkey: pubkey,
+      };
+    });
+  }, [pubkey]);
+
   const obs = useRef(new OBSWebSocket());
 
-  const bc = useRef(new BroadcastChannel("eventManager"));
+  const bc = useRef(new BroadcastChannel(STREAM_CONFIG_CHANNEL));
   const bcNowPlaying = useRef(new BroadcastChannel("eventManager-nowPlaying"));
 
   useEffect(() => {
@@ -87,7 +99,7 @@ export default function EventManager() {
           const content = JSON.parse(value.content);
           console.debug("content", content);
           bcNowPlaying.current.postMessage(content);
-          setEventConfig((prev) => {
+          setStreamConfig((prev) => {
             if (prev.status === "live") {
               publishNowPlaying(
                 content.creator,
@@ -120,11 +132,11 @@ export default function EventManager() {
       image: z.string(),
     }),
     defaultValues: {
-      title: eventConfig.title ?? "",
-      summary: eventConfig.summary ?? "",
-      d: eventConfig.d ?? "",
-      streaming: eventConfig.streaming ?? "",
-      image: eventConfig.image ?? "",
+      title: streamConfig.title ?? "",
+      summary: streamConfig.summary ?? "",
+      d: streamConfig.d ?? "",
+      streaming: streamConfig.streaming ?? "",
+      image: streamConfig.image ?? "",
     },
   });
 
@@ -135,7 +147,7 @@ export default function EventManager() {
     streaming: any;
     image: any;
   }) => {
-    setEventConfig((prev) => {
+    setStreamConfig((prev) => {
       const newConfig = {
         ...prev,
         title: data.title,
@@ -145,7 +157,7 @@ export default function EventManager() {
         image: data.image,
       };
 
-      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
 
       return newConfig;
     });
@@ -174,7 +186,7 @@ export default function EventManager() {
     obs.current.on("StreamStateChanged", async (event) => {
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STARTED") {
         console.debug("output started", event);
-        setEventConfig((prev) => {
+        setStreamConfig((prev) => {
           // publishLiveEvent(privkey, prev, "live");
           return {
             ...prev,
@@ -185,7 +197,7 @@ export default function EventManager() {
       }
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STOPPED") {
         console.debug("output started", event);
-        setEventConfig((prev) => {
+        setStreamConfig((prev) => {
           // publishLiveEvent(privkey, prev, "ended");
           return {
             ...prev,
@@ -208,56 +220,59 @@ export default function EventManager() {
 
   const setParticipants = (participant: string) => {
     console.debug("setting participant", participant);
-    setEventConfig((prev) => {
+    setStreamConfig((prev) => {
       const newConfig = {
         ...prev,
         p: [...prev.p, participant],
       };
 
-      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
 
   const setAndWipeParticipants = (participant: string) => {
-    setEventConfig((prev) => {
+    setStreamConfig((prev) => {
       const newConfig = {
         ...prev,
         p: [participant],
       };
 
-      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
 
   const removeParticipant = (participant: string) => {
     console.debug("removing participant", participant);
-    setEventConfig((prev) => {
+    setStreamConfig((prev) => {
       const newConfig = {
         ...prev,
         p: prev.p.filter((p) => p !== participant),
       };
 
-      localStorage.setItem("eventManagerConfig", JSON.stringify(newConfig));
+      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
 
   useEffect(() => {
     if (!privkey) return;
-    console.debug("eventConfig", eventConfig);
-    if (eventConfig.status === "live") {
+    console.debug("streamConfig", streamConfig);
+    localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(streamConfig));
+    bc.current.postMessage(streamConfig);
+    // TODO: Update stream config in local storage?
+    if (streamConfig.status === "live") {
       console.debug("firing live");
-      publishLiveEvent(privkey, eventConfig, "live");
+      publishLiveEvent(privkey, streamConfig, "live");
     } else if (
-      eventConfig.status === "ended" &&
-      eventConfig.prevStatus === "live"
+      streamConfig.status === "ended" &&
+      streamConfig.prevStatus === "live"
     ) {
       console.debug("firing ended");
-      publishLiveEvent(privkey, eventConfig, "ended");
+      publishLiveEvent(privkey, streamConfig, "ended");
     }
-  }, [JSON.stringify(eventConfig)]);
+  }, [JSON.stringify(streamConfig)]);
 
   return (
     <div className="h-screen bg-gray-800 overflow-auto text-white">
@@ -268,13 +283,13 @@ export default function EventManager() {
               home: (
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
                   {/* <p>{connected ? "connected" : "disconnected"}</p> */}
-                  <StreamDisplay pubkey={pubkey} eventConfig={eventConfig} />
+                  <StreamDisplay pubkey={pubkey} streamConfig={streamConfig} />
                   {/* <div className="flex gap-2">
                     <button
                       className="rounded bg-gray-600 px-2 py-1"
                       onClick={async () =>
                         console.log(
-                          await publishLiveEvent(privkey, eventConfig, "live")
+                          await publishLiveEvent(privkey, streamConfig, "live")
                         )
                       }
                     >
@@ -284,7 +299,7 @@ export default function EventManager() {
                       className="rounded bg-gray-600 px-2 py-1"
                       onClick={async () =>
                         console.log(
-                          await publishLiveEvent(privkey, eventConfig, "ended")
+                          await publishLiveEvent(privkey, streamConfig, "ended")
                         )
                       }
                     >
@@ -295,7 +310,7 @@ export default function EventManager() {
               ),
               participants: (
                 <div className="flex flex-col w-full h-full gap-4 py-2 px-4 overflow-y-scroll">
-                  {eventConfig.p.map((value) => (
+                  {streamConfig.p.map((value) => (
                     <RemoveableParticipantForm
                       key={value}
                       participant={value}
@@ -303,7 +318,7 @@ export default function EventManager() {
                     />
                   ))}
                   <AddParticipantForm
-                    participants={eventConfig.p}
+                    participants={streamConfig.p}
                     setParticipants={setParticipants}
                   />
                 </div>

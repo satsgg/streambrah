@@ -1,14 +1,14 @@
 import { DEFAULT_RELAYS, displayName } from "@/utils/nostr";
 import { useProfile } from "../useProfile";
-import { EventConfig } from "./util";
+import { StreamConfig } from "../types";
 
 export default function StreamDisplay({
   pubkey,
-  eventConfig,
+  streamConfig,
   relays,
 }: {
   pubkey: string;
-  eventConfig: EventConfig;
+  streamConfig: StreamConfig;
   relays?: string[];
 }) {
   const { profile, isLoading } = useProfile(pubkey, DEFAULT_RELAYS);
@@ -17,16 +17,16 @@ export default function StreamDisplay({
     <div className="flex flex-col gap-2">
       <div className="h-max-1/4">
         <div id="cardThumbnailWrapper" className="relative aspect-video">
-          {eventConfig.image ? (
+          {streamConfig.image ? (
             <img
               className="h-full w-full"
-              src={eventConfig.image}
+              src={streamConfig.image}
               alt={`thumbnail of ${pubkey}`}
             />
           ) : (
             <div className="h-full w-full rounded bg-stone-800"></div>
           )}
-          {eventConfig.status === "live" && (
+          {streamConfig.status === "live" && (
             <div className="absolute top-0 m-2.5">
               <div className="rounded bg-red-600 px-1">
                 <p className="text-sm font-semibold uppercase">live</p>
@@ -52,8 +52,8 @@ export default function StreamDisplay({
           </div>
         </div>
         <div className="flex min-w-0 flex-col">
-          {eventConfig.title && (
-            <h3 className="truncate font-bold">{eventConfig.title}</h3>
+          {streamConfig.title && (
+            <h3 className="truncate font-bold">{streamConfig.title}</h3>
           )}
           <p className="truncate">
             {!isLoading && displayName(pubkey, profile)}

@@ -8,6 +8,7 @@ import {
 } from "nostr-tools";
 import { Pool } from "../Pool";
 import { DEFAULT_RELAYS } from "@/utils/nostr";
+import { StreamConfig } from "../types";
 
 export const signEventPrivkey = (
   unsignedEvent: UnsignedEvent,
@@ -31,7 +32,7 @@ export const signEventPrivkey = (
 
 export const publishLiveEvent = async (
   privkey: string,
-  eventConfig: EventConfig,
+  streamConfig: StreamConfig,
   status: "planned" | "live" | "ended"
 ) => {
   const event: UnsignedEvent = {
@@ -39,19 +40,19 @@ export const publishLiveEvent = async (
     pubkey: getPublicKey(privkey),
     created_at: Math.floor(Date.now() / 1000),
     tags: [
-      ["d", eventConfig.d],
-      ["title", eventConfig.title],
-      ["summary", eventConfig.summary],
-      ["streaming", eventConfig.streaming],
+      ["d", streamConfig.d],
+      ["title", streamConfig.title],
+      ["summary", streamConfig.summary],
+      ["streaming", streamConfig.streaming],
       ["starts", `${Math.floor(Date.now() / 1000)}`],
       ["status", status],
     ],
     content: "",
   };
-  if (eventConfig.image) event.tags.push(["image", eventConfig.image]);
+  if (streamConfig.image) event.tags.push(["image", streamConfig.image]);
 
   // add participants
-  eventConfig.p.forEach((p) => {
+  streamConfig.p.forEach((p) => {
     event.tags.push(["p", p]);
   });
 
@@ -77,13 +78,13 @@ export const publishNowPlaying = async (
   title: string,
   link: string,
   privkey: string,
-  eventConfig: EventConfig
+  streamConfig: StreamConfig
 ) => {
   const event: UnsignedEvent = {
     kind: 1311,
     pubkey: getPublicKey(privkey),
     created_at: Math.floor(Date.now() / 1000),
-    tags: [["a", `30311:${getPublicKey(privkey)}:${eventConfig.d}`]],
+    tags: [["a", `30311:${getPublicKey(privkey)}:${streamConfig.d}`]],
     content: `Now playing ${title} by ${creator}\n${link}`,
   };
 
@@ -123,25 +124,8 @@ export const publishNowPlaying = async (
 //   ["relays", "wss://one.com", "wss://two.com", ...]
 // ],
 
-export type EventConfig = {
-  d: string;
-  title: string;
-  summary: string;
-  image?: string;
-  t?: string[];
-  streaming: string;
-  recording?: string;
-  starts?: string;
-  ends?: string;
-  prevStatus?: "planned" | "live" | "ended";
-  status?: "planned" | "live" | "ended";
-  currentParticipants?: string;
-  totalParticipants?: string;
-  p: string[];
-  relays?: string[];
-};
-
-export const DEFAULT_EVENT_CONFIG: EventConfig = {
+export const DEFAULT_EVENT_CONFIG: StreamConfig = {
+  pubkey: "",
   d: "",
   title: "",
   summary: "",

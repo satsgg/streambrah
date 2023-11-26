@@ -15,6 +15,7 @@ import {
   jsonToState,
   stateToJson,
 } from "./util";
+import useStreamConfig from "../useStreamConfig";
 
 let quickSpeed = false;
 WasmBoy.ResponsiveGamepad.onInputsChange(
@@ -42,23 +43,26 @@ WasmBoy.ResponsiveGamepad.onInputsChange(
   }
 );
 
-// TODO: Get initial settings on mount from localstorage
-// if nothing there.. use defaults
-// receive new settings from bc channel
-// update timers based off settings
-
 export default function Pokemon() {
   const [isPlaying, setIsPlaying] = useState(false);
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
+  const d = searchParams.get("d");
   const relays = searchParams.getAll("relay");
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const streamConfig = useStreamConfig();
 
-  const { inputs, setInputs } = useInputQueue(pubkey, relays);
+  const { inputs, setInputs } = useInputQueue(
+    streamConfig?.pubkey || pubkey,
+    streamConfig?.d || d,
+    streamConfig?.relays || relays
+  );
+
+  console.debug(streamConfig?.pubkey, streamConfig?.d, streamConfig?.relays);
+  console.debug(pubkey, d, relays);
 
   useEffect(() => {
     const settings = getSettingsFromLS();
-    console.debug("settings", settings);
     setSettings(settings);
   }, []);
 
