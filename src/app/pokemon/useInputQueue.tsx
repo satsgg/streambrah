@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Event as NostrEvent } from "nostr-tools";
 import { Pool } from "../Pool";
-import { InputAndAuthor, parseInput } from "./util";
+import { InputAndAuthor, parseContent, parseInput } from "./util";
+import { getZapAmountFromReceipt, parseZapRequest } from "@/utils/nostr";
 
 const testInput = {
   input: "a",
@@ -32,15 +33,55 @@ export const useInputQueue = (
       },
     ]);
 
-    sub.on("event", (event: NostrEvent) => {
-      console.debug("event", event);
-      const input = parseInput(event);
-      if (!input) return;
+    sub.on("event", (event: NostrEvent<1311> | NostrEvent<9735>) => {
+      let inputAndAuthor: InputAndAuthor = {
+        input: "a",
+        id: "",
+        pubkey: "",
+        amount: 0,
+      };
+
+      if (event.kind === 1311) {
+        console.debug("1311", event);
+        const input = parseContent(event.content);
+        if (!input) return;
+        inputAndAuthor = {
+          input: input,
+          id: event.id,
+          pubkey: event.pubkey,
+          amount: 0,
+        };
+      } else if (event.kind === 9735) {
+        console.debug("9735", event);
+        const zapRequestTag = event.tags.find((t) => t[0] == "description");
+        if (!zapRequestTag || !zapRequestTag[1]) return;
+
+        const zapRequest: NostrEvent<9734> = JSON.parse(zapRequestTag[1]);
+
+        const zap = parseZapRequest(zapRequest);
+        console.debug("zap", zap);
+        if (!zap) return;
+
+        const amount = getZapAmountFromReceipt(event);
+        console.debug("amount", amount);
+        if (!amount) return;
+
+        const input = parseContent(zap.content);
+        if (!input) return;
+
+        inputAndAuthor = {
+          input: input,
+          id: zap.id,
+          pubkey: zap.pubkey,
+          amount: amount,
+        };
+      } else return;
+
       setInputs((prevInputs) => {
         if (prevInputs.some((i) => i.id === event.id)) {
           return prevInputs;
         }
-        return [...prevInputs, input];
+        return [...prevInputs, inputAndAuthor];
       });
     });
 

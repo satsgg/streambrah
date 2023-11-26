@@ -35,6 +35,15 @@ export const parseInput = (event: NostrEvent): InputAndAuthor | null => {
   };
 };
 
+export const parseContent = (content: string): string | null => {
+  const parsedContent = content.split(" ")[0].toLowerCase();
+  if (!(parsedContent in Input)) {
+    return null;
+  }
+
+  return parsedContent;
+};
+
 export const executeMove = (input: string) => {
   console.log("executing input: " + input);
   window.dispatchEvent(new KeyboardEvent("keydown", { code: input }));
