@@ -65,6 +65,7 @@ export default function EventManager() {
   );
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
+  // TODO: check if loadLocalStorage is running unnecessarily...
   const [streamConfig, setStreamConfig] = useState<StreamConfig>(
     loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
   );

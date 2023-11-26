@@ -14,8 +14,12 @@ const getStreamConfig = (): StreamConfig | null => {
 };
 
 export default function useStreamConfig() {
-  const [config, setConfig] = useState<StreamConfig | null>(getStreamConfig());
+  const [config, setConfig] = useState<StreamConfig | null>(null);
   const bc = useRef(new BroadcastChannel(STREAM_CONFIG_CHANNEL));
+
+  useEffect(() => {
+    setConfig(getStreamConfig());
+  }, []);
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
@@ -23,7 +27,7 @@ export default function useStreamConfig() {
       console.debug("new stream config", newConfig);
       setConfig(newConfig);
     };
-  });
+  }, []);
 
   return config;
 }

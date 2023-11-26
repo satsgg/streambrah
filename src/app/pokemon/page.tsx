@@ -58,9 +58,6 @@ export default function Pokemon() {
     streamConfig?.relays || relays
   );
 
-  console.debug(streamConfig?.pubkey, streamConfig?.d, streamConfig?.relays);
-  console.debug(pubkey, d, relays);
-
   useEffect(() => {
     const settings = getSettingsFromLS();
     setSettings(settings);
@@ -115,6 +112,7 @@ export default function Pokemon() {
   }, []);
 
   const loadWasmBoy = async () => {
+    console.debug("loading wasmboy");
     const canvasElement = document.querySelector("#wasmboy-canvas");
     await WasmBoy.config({
       isGbcEnabled: true,
@@ -182,25 +180,13 @@ export default function Pokemon() {
     }, 50);
   };
 
-  // TODO: Fix load auto save from local storage
-  // const loadSaveState = async () => {
-  //   // pick which save state to load?
-  //   // still can't save externally.
-  //   const jsonSaveState = localStorage.getItem("autoSave");
-  //   if (!jsonSaveState) return;
-  //   const saveState = convertJsonSaveState(jsonSaveState);
-  //   await WasmBoy.loadState(saveState);
-  // };
-
   const downloadLocalState = async () => {
-    console.debug("downloading local state");
     // make sure paused already?
     if (!WasmBoy.isLoadedAndStarted()) {
       console.error("Cannot save. WasmBoy is not started");
       return;
     }
     const shouldContinuePlaying = WasmBoy.isPlaying();
-    // console.debug("shouldContinuePlaying", shouldContinuePlaying);
     const state = await WasmBoy.saveState();
 
     if (shouldContinuePlaying) {
@@ -208,7 +194,7 @@ export default function Pokemon() {
     }
 
     const jsonState = stateToJson(state);
-    console.debug("jsonState", jsonState);
+    console.debug("save jsonState", jsonState);
     bcDock.current.postMessage({
       type: "save",
       data: jsonState,
@@ -216,9 +202,8 @@ export default function Pokemon() {
   };
 
   const loadLocalState = async (jsonState: string) => {
-    console.debug("loadlocalstate");
-    // inputStateFile.current?.click();
     const state = jsonToState(jsonState);
+    console.debug("load jsonState", jsonState);
     await WasmBoy.loadState(state);
     WasmBoy.play();
     setTimeout(() => {

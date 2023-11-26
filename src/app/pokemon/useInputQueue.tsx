@@ -33,6 +33,7 @@ export const useInputQueue = (
     ]);
 
     sub.on("event", (event: NostrEvent) => {
+      console.debug("event", event);
       const input = parseInput(event);
       if (!input) return;
       setInputs((prevInputs) => {
@@ -44,10 +45,11 @@ export const useInputQueue = (
     });
 
     return () => {
-      setInputs([]);
+      // setInputs([]); will cause infinite loop with dependencies
+      // why did i add it ever?
       Pool.close(relays);
     };
-  }, []);
+  }, [pubkey, d, JSON.stringify(relays)]);
 
   return { inputs, setInputs };
 };
