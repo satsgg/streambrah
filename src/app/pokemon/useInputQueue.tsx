@@ -34,54 +34,63 @@ export const useInputQueue = (
     ]);
 
     sub.on("event", (event: NostrEvent<1311> | NostrEvent<9735>) => {
-      let inputAndAuthor: InputAndAuthor = {
-        input: "a",
-        id: "",
-        pubkey: "",
-        amount: 0,
-      };
+      if (event.kind !== 1311 && event.kind !== 9735) return;
 
       if (event.kind === 1311) {
         console.debug("1311", event);
         const input = parseContent(event.content);
         if (!input) return;
-        inputAndAuthor = {
+        const inputAndAuthor: InputAndAuthor = {
           input: input,
           id: event.id,
           pubkey: event.pubkey,
           amount: 0,
         };
-      } else if (event.kind === 9735) {
-        console.debug("9735", event);
-        const zapRequestTag = event.tags.find((t) => t[0] == "description");
-        if (!zapRequestTag || !zapRequestTag[1]) return;
+        console.debug("adding input", inputAndAuthor);
+        setInputs((prevInputs) => {
+          if (prevInputs.some((i) => i.id === event.id)) {
+            return prevInputs;
+          }
+          return [...prevInputs, inputAndAuthor];
+        });
+        return;
+      }
 
-        const zapRequest: NostrEvent<9734> = JSON.parse(zapRequestTag[1]);
+      const zapRequestTag = event.tags.find((t) => t[0] == "description");
+      if (!zapRequestTag || !zapRequestTag[1]) return;
 
-        const zap = parseZapRequest(zapRequest);
-        console.debug("zap", zap);
-        if (!zap) return;
+      const zapRequest: NostrEvent<9734> = JSON.parse(zapRequestTag[1]);
 
-        const amount = getZapAmountFromReceipt(event);
-        console.debug("amount", amount);
-        if (!amount) return;
+      const zap = parseZapRequest(zapRequest);
+      console.debug("zap", zap);
+      if (!zap) return;
 
-        const input = parseContent(zap.content);
-        if (!input) return;
+      const amount = getZapAmountFromReceipt(event);
+      console.debug("amount", amount);
+      if (!amount) return;
 
-        inputAndAuthor = {
-          input: input,
-          id: zap.id,
-          pubkey: zap.pubkey,
-          amount: amount,
-        };
-      } else return;
+      const input = parseContent(zap.content);
+      if (!input) return;
+
+      const inputAndAuthor: InputAndAuthor = {
+        input: input,
+        id: zap.id,
+        pubkey: zap.pubkey,
+        amount: amount,
+      };
+      console.debug("adding input", inputAndAuthor);
 
       setInputs((prevInputs) => {
-        if (prevInputs.some((i) => i.id === event.id)) {
+        if (prevInputs.some((i) => i.id === zap.id)) {
           return prevInputs;
         }
-        return [...prevInputs, inputAndAuthor];
+        let sortedInputs = [...prevInputs];
+        // thought it would be faster to put it in front first..
+        // but the sort func places newer in front if same amount
+        // sortedInputs.unshift(inputAndAuthor);
+        sortedInputs.push(inputAndAuthor);
+        sortedInputs.sort((a, b) => b.amount - a.amount);
+        return sortedInputs;
       });
     });
 
