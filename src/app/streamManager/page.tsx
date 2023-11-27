@@ -15,6 +15,7 @@ import AddParticipantForm from "./addParticipantForm";
 import RemoveableParticipantForm from "./removeableParticipantForm";
 import { STREAM_CONFIG_CHANNEL, STREAM_CONFIG_KEY } from "../constants";
 import { StreamConfig } from "../types";
+import { AddRelayForm, Relay } from "../relays";
 
 const Input = ({
   name,
@@ -60,9 +61,9 @@ const loadLocalStorageConfig = (): StreamConfig | null => {
 // use multiple pages instead of views
 export default function EventManager() {
   const [connected, setConnected] = useState(false);
-  const [view, setView] = useState<"home" | "participants" | "settings">(
-    "home"
-  );
+  const [view, setView] = useState<
+    "home" | "participants" | "relays" | "settings"
+  >("home");
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
   // TODO: check if loadLocalStorage is running unnecessarily...
@@ -257,6 +258,16 @@ export default function EventManager() {
     });
   };
 
+  console.debug("streamConfig relays", streamConfig.relays);
+  const setRelays = (relays: string[]) => {
+    setStreamConfig((prev) => {
+      return {
+        ...prev,
+        relays: relays,
+      };
+    });
+  };
+
   useEffect(() => {
     if (!privkey) return;
     console.debug("streamConfig", streamConfig);
@@ -324,6 +335,25 @@ export default function EventManager() {
                   />
                 </div>
               ),
+              relays: (
+                <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
+                  <div className="flex flex-col w-full gap-y-2">
+                    <h1 className="text-lg font-semibold">Relays</h1>
+                    {streamConfig.relays.map((relay) => (
+                      <Relay
+                        key={relay}
+                        relayUrl={relay}
+                        relays={streamConfig.relays}
+                        setRelays={setRelays}
+                      />
+                    ))}
+                    <AddRelayForm
+                      relays={streamConfig.relays}
+                      setRelays={setRelays}
+                    />
+                  </div>
+                </div>
+              ),
               settings: (
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
                   <form
@@ -371,7 +401,7 @@ export default function EventManager() {
                     />
                   </form>
                   <button
-                    className="rounded bg-gray-600 px-2 py-1"
+                    className="rounded bg-gray-600 px-2 py-1 hover:bg-gray-500"
                     onClick={handleSubmit(onSubmit)}
                   >
                     Update
@@ -382,7 +412,7 @@ export default function EventManager() {
           }
           <div className="flex justify-center gap-4 mt-auto py-2">
             <button
-              className="bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
+              className="bg-gray-600 p-1 rounded hover:bg-gray-500"
               onClick={() => setView("home")}
             >
               <svg
@@ -420,6 +450,25 @@ export default function EventManager() {
               </svg>
             </button>
 
+            <button
+              className="bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
+              onClick={() => setView("relays")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46"
+                />
+              </svg>
+            </button>
             <button
               className="bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
               onClick={() => setView("settings")}

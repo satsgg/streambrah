@@ -14,5 +14,5 @@ export type StreamConfig = {
   currentParticipants?: string;
   totalParticipants?: string;
   p: string[];
-  relays?: string[];
+  relays: string[];
 };

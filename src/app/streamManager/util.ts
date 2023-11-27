@@ -133,4 +133,5 @@ export const DEFAULT_EVENT_CONFIG: StreamConfig = {
   status: "planned",
   prevStatus: "planned",
   p: [],
+  relays: [],
 };

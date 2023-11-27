@@ -1,5 +1,5 @@
 "use client";
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { WasmBoy } from "wasmboy";
 // @ts-ignore
