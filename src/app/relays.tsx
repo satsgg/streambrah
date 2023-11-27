@@ -49,9 +49,9 @@ export function AddRelayForm({
     handleSubmit,
     setError,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useZodForm({
-    mode: "onSubmit",
+    mode: "onChange",
     schema: z.object({ newRelay: z.string().startsWith("wss://") }),
     defaultValues: {
       newRelay: "",
@@ -95,8 +95,8 @@ export function AddRelayForm({
           type="submit"
           // className="capitalize bg-blue-200 align-right inline-flex items-center justify-center rounded bg-primary px-3 py-2 text-sm font-semibold shadow-md transition duration-150 ease-in-out hover:bg-primary hover:shadow-lg focus:bg-primary focus:shadow-lg focus:outline-none focus:ring-0 active:bg-primary active:shadow-lg"
 
-          className="capitalize bg-gray-600 px-2 py-1 rounded hover:cursor-pointer hover:bg-gray-500"
-          disabled={errors.newRelay ? true : false}
+          className="capitalize bg-gray-600 px-2 py-1 rounded enabled:hover:bg-gray-500"
+          disabled={!isValid}
           onClick={handleSubmit(onSubmit)}
         >
           add

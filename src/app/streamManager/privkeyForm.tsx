@@ -35,7 +35,7 @@ export default function PrivkeyForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
     schema: z.object({
@@ -52,11 +52,10 @@ export default function PrivkeyForm({
     <div className="flex flex-col gap-2">
       <form spellCheck={false} onSubmit={handleSubmit(onSubmit)}>
         <input
-          className={`${
-            errors.key
-              ? "border-red-500 focus:border-red-500"
-              : "focus:border-primary"
-          } bg-gray-600 focus:shadow-outline w-full min-w-[20ch] resize-none appearance-none rounded border py-2 px-3 leading-tight shadow placeholder:italic focus:outline-none`}
+          className={`
+            ${errors.key && "focus:border-red-500"}
+            focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none
+          `}
           type="text"
           placeholder="nsec / hex private key"
           autoComplete="off"
@@ -65,7 +64,8 @@ export default function PrivkeyForm({
         {errors.key && <p className="text-sm ">{errors.key.message}</p>}
       </form>
       <button
-        className="w-full bg-gray-600 p-1 rounded hover:cursor-pointer hover:bg-gray-500"
+        className="w-full bg-gray-600 p-1 rounded enabled:hover:bg-gray-500"
+        disabled={!isValid}
         onClick={handleSubmit(onSubmit)}
       >
         Submit

@@ -15,9 +15,9 @@ export default function AddParticipantForm({
     handleSubmit,
     setError,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useZodForm({
-    mode: "onSubmit",
+    mode: "onChange",
     schema: z.object({
       participant: z.string().refine(pubkeyValidator, {
         message: "Invalid key",
@@ -59,9 +59,10 @@ export default function AddParticipantForm({
           onSubmit={handleSubmit(onSubmit)}
         >
           <input
-            className={`${
-              errors.participant && "focus:border-red-500"
-            } bg-gray-600 focus:shadow-outline w-full resize-none appearance-none rounded py-2 px-3 leading-tight shadow focus:border-primary focus:outline-none`}
+            className={`
+              ${errors.participant && "focus:border-red-500"}
+              focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none
+            `}
             type="text"
             placeholder="pubkey / npub"
             autoComplete="off"
@@ -70,8 +71,8 @@ export default function AddParticipantForm({
         </form>
         <button
           type="submit"
-          className="capitalize w-full bg-gray-600 hover:bg-gray-500 align-right inline-flex items-center justify-center rounded bg-primary px-3 py-2 text-sm font-semibold shadow-md transition duration-150 ease-in-out hover:bg-primary hover:shadow-lg focus:bg-primary focus:shadow-lg focus:outline-none focus:ring-0 active:bg-primary active:shadow-lg"
-          disabled={errors.participant ? true : false}
+          className="capitalize w-full bg-gray-600 enabled:hover:bg-gray-500 align-right inline-flex items-center justify-center rounded bg-primary px-3 py-2 text-sm font-semibold shadow-md transition duration-150 ease-in-out hover:bg-primary hover:shadow-lg focus:bg-primary focus:shadow-lg focus:outline-none focus:ring-0 active:bg-primary active:shadow-lg"
+          disabled={!isValid}
           onClick={handleSubmit(onSubmit)}
         >
           add

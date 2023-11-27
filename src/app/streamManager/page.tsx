@@ -34,9 +34,10 @@ const Input = ({
     <div>
       <label className="text-sm capitalize">{name}</label>
       <input
-        className={`${
-          error ? "border-red-500 focus:border-red-500" : "focus:border-primary"
-        } bg-gray-600 focus:shadow-outline w-full min-w-[20ch] resize-none appearance-none rounded py-1 px-2 leading-tight shadow placeholder:italic focus:outline-none`}
+        className={`
+          ${error && "focus:border-red-500"}
+          focus:shadow-outline h-8 w-full resize-none appearance-none rounded border border-gray-500 bg-gray-600 py-2 px-3 leading-tight text-white shadow placeholder:italic focus:border-primary focus:bg-slate-900 focus:outline-none
+        `}
         type="text"
         placeholder={placeholder}
         autoComplete="off"
@@ -129,8 +130,8 @@ export default function EventManager() {
     schema: z.object({
       title: z.string(),
       summary: z.string(),
-      d: z.string(),
-      streaming: z.string(),
+      d: z.string().min(1),
+      streaming: z.string().min(1),
       image: z.string(),
     }),
     defaultValues: {
@@ -228,7 +229,6 @@ export default function EventManager() {
         p: [...prev.p, participant],
       };
 
-      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
@@ -240,7 +240,6 @@ export default function EventManager() {
         p: [participant],
       };
 
-      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
@@ -253,12 +252,10 @@ export default function EventManager() {
         p: prev.p.filter((p) => p !== participant),
       };
 
-      // localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(newConfig));
       return newConfig;
     });
   };
 
-  console.debug("streamConfig relays", streamConfig.relays);
   const setRelays = (relays: string[]) => {
     setStreamConfig((prev) => {
       return {
@@ -273,7 +270,7 @@ export default function EventManager() {
     console.debug("streamConfig", streamConfig);
     localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(streamConfig));
     bc.current.postMessage(streamConfig);
-    // TODO: Update stream config in local storage?
+
     if (streamConfig.status === "live") {
       console.debug("firing live");
       publishLiveEvent(privkey, streamConfig, "live");
@@ -296,32 +293,11 @@ export default function EventManager() {
                 <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
                   {/* <p>{connected ? "connected" : "disconnected"}</p> */}
                   <StreamDisplay pubkey={pubkey} streamConfig={streamConfig} />
-                  {/* <div className="flex gap-2">
-                    <button
-                      className="rounded bg-gray-600 px-2 py-1"
-                      onClick={async () =>
-                        console.log(
-                          await publishLiveEvent(privkey, streamConfig, "live")
-                        )
-                      }
-                    >
-                      Start
-                    </button>
-                    <button
-                      className="rounded bg-gray-600 px-2 py-1"
-                      onClick={async () =>
-                        console.log(
-                          await publishLiveEvent(privkey, streamConfig, "ended")
-                        )
-                      }
-                    >
-                      End
-                    </button>
-                  </div> */}
                 </div>
               ),
               participants: (
-                <div className="flex flex-col w-full h-full gap-4 py-2 px-4 overflow-y-scroll">
+                <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
+                  <h1 className="text-lg font-semibold">Partitipants</h1>
                   {streamConfig.p.map((value) => (
                     <RemoveableParticipantForm
                       key={value}
