@@ -2,6 +2,7 @@ import { pubkeyValidator } from "@/utils/nostr";
 import { useZodForm } from "@/utils/useZodForm";
 import { nip19 } from "nostr-tools";
 import { z } from "zod";
+import Button from "../Button";
 
 export default function AddParticipantForm({
   participants,
@@ -69,14 +70,13 @@ export default function AddParticipantForm({
             {...register("participant")}
           />
         </form>
-        <button
-          type="submit"
-          className="capitalize w-full bg-gray-600 enabled:hover:bg-gray-500 align-right inline-flex items-center justify-center rounded bg-primary px-3 py-2 text-sm font-semibold shadow-md transition duration-150 ease-in-out hover:bg-primary hover:shadow-lg focus:bg-primary focus:shadow-lg focus:outline-none focus:ring-0 active:bg-primary active:shadow-lg"
+        <Button
+          className="w-full"
           disabled={!isValid}
           onClick={handleSubmit(onSubmit)}
         >
-          add
-        </button>
+          Add
+        </Button>
       </div>
       {errors.participant && (
         <p className="text-sm">{errors.participant.message}</p>

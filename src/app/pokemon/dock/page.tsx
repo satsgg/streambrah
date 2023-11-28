@@ -10,6 +10,7 @@ import {
   getAutoSaveFromLS,
   getSettingsFromLS,
 } from "../util";
+import Button from "@/app/Button";
 
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
@@ -107,7 +108,7 @@ export default function PokemonDock() {
   };
 
   return (
-    <div className="flex flex-col justify-between h-screen bg-gray-800 text-white text-sm whitespace-nowrap p-2">
+    <div className="flex flex-col justify-between h-screen text-sm whitespace-nowrap p-2 bg-stone-800 text-white">
       {
         {
           home: (
@@ -193,12 +194,7 @@ export default function PokemonDock() {
                     {saveState ? saveStateToDate(saveState) : ""}
                   </label>
                 </div>
-                <button
-                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
-                  onClick={() => sendAction("save")}
-                >
-                  Save
-                </button>
+                <Button onClick={() => sendAction("save")}>Save</Button>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -214,13 +210,12 @@ export default function PokemonDock() {
                     {loadState ? saveStateToDate(loadState) : ""}
                   </label>
                 </div>
-                <button
-                  className="bg-gray-600 enabled:hover:bg-gray-500 rounded px-2 py-1"
+                <Button
                   disabled={loadState === ""}
                   onClick={() => sendAction("load", loadState)}
                 >
                   Load
-                </button>
+                </Button>
               </div>
 
               <div className="flex flex-col">

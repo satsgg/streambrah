@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { Video, queryVideo, testVideos } from "../util";
+import Button from "@/app/Button";
 
 export default function Dock() {
   const bc = useRef(new BroadcastChannel("youtube-dock"));
@@ -46,13 +47,9 @@ export default function Dock() {
   // - set cost per second?
 
   return (
-    <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white p-2">
-      <button className="rounded bg-gray-600 px-2 py-1" onClick={addTestVideo}>
-        Add test video
-      </button>
-      <button className="rounded bg-gray-600 px-2 py-1" onClick={skip}>
-        Skip
-      </button>
+    <div className="flex flex-col gap-y-2 h-screen p-2 bg-stone-800 text-white">
+      <Button onClick={addTestVideo}>Add test video</Button>
+      <Button onClick={skip}>Skip</Button>
     </div>
   );
 }

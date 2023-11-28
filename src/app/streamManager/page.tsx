@@ -16,6 +16,7 @@ import RemoveableParticipantForm from "./removeableParticipantForm";
 import { STREAM_CONFIG_CHANNEL, STREAM_CONFIG_KEY } from "../constants";
 import { StreamConfig } from "../types";
 import { AddRelayForm, Relay } from "../relays";
+import Button from "../Button";
 
 const Input = ({
   name,
@@ -284,7 +285,7 @@ export default function EventManager() {
   }, [JSON.stringify(streamConfig)]);
 
   return (
-    <div className="h-screen bg-gray-800 overflow-auto text-white">
+    <div className="h-screen overflow-auto bg-stone-800 text-white">
       {privkey ? (
         <div className="flex flex-col h-full">
           {
@@ -376,12 +377,7 @@ export default function EventManager() {
                       error={errors.streaming}
                     />
                   </form>
-                  <button
-                    className="rounded bg-gray-600 px-2 py-1 hover:bg-gray-500"
-                    onClick={handleSubmit(onSubmit)}
-                  >
-                    Update
-                  </button>
+                  <Button onClick={handleSubmit(onSubmit)}>Update</Button>
                 </div>
               ),
             }[view]

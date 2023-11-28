@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { ZapAlert, testZaps } from "../util";
+import Button from "@/app/Button";
 
 export default function Dock() {
   const bc = useRef(new BroadcastChannel("alerts-dock"));
@@ -26,10 +27,8 @@ export default function Dock() {
   };
 
   return (
-    <div className="flex flex-col gap-y-2 h-screen bg-gray-800 text-white p-2">
-      <button className="rounded bg-gray-600 px-2 py-1" onClick={addTestZap}>
-        Test zap alert
-      </button>
+    <div className="flex flex-col gap-y-2 h-screen p-2 bg-stone-800 text-white">
+      <Button onClick={addTestZap}>Test zap alert</Button>
     </div>
   );
 }

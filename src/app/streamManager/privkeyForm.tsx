@@ -2,6 +2,7 @@ import { validHexPrivkey, validNsecKey } from "@/utils/nostr";
 import { useZodForm } from "@/utils/useZodForm";
 import { getPublicKey, nip19 } from "nostr-tools";
 import { z } from "zod";
+import Button from "../Button";
 
 // TODO: nsec doesn't work
 export default function PrivkeyForm({
@@ -63,13 +64,9 @@ export default function PrivkeyForm({
         />
         {errors.key && <p className="text-sm ">{errors.key.message}</p>}
       </form>
-      <button
-        className="w-full bg-gray-600 p-1 rounded enabled:hover:bg-gray-500"
-        disabled={!isValid}
-        onClick={handleSubmit(onSubmit)}
-      >
+      <Button disabled={!isValid} onClick={handleSubmit(onSubmit)}>
         Submit
-      </button>
+      </Button>
     </div>
   );
 }
