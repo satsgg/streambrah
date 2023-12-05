@@ -81,13 +81,13 @@ export default function Configure() {
           <h2 className="text-xl font-semibold pt-4">How it works</h2>
           <p>
             The controller dock provided allows you to input Gameboy inputs,
-            save state, load state, and configure the input timer. Press "play"
-            in the dock to get started!
+            save state, load state, and configure the input timer. Press
+            &apos;play&apos; in the dock to get started!
           </p>
           <p>
             Viewers interact with the gameboy by posting chat messages
-            containing inputs in text form like "up", "a", or "start". Zap chat
-            messages are supported too!
+            containing inputs in text form like &apos;up&apos;, &apos;a&apos;,
+            or &apos;start&apos;. Zap chat messages are supported too!
           </p>
           <p>
             The input queue prioritizes chat inputs by highest amount of sats.

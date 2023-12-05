@@ -14,12 +14,6 @@ import { ZapAlert } from "./util";
 
 const Alert = ({ alert, relays }: { alert: ZapAlert; relays: string[] }) => {
   const { profile, isLoading } = useProfile(alert.pubkey, relays);
-  useEffect(() => {
-    console.debug("zap alert mounted", alert);
-    return () => {
-      console.debug("zap alert unmounted", alert);
-    };
-  }, []);
 
   return (
     <div className="inline-flex min-w-0 flex-col text-white">

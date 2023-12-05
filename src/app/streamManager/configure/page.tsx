@@ -40,7 +40,7 @@ export default function Configure() {
           </div>
 
           <p>{"Go to Tools -> Websocket Server Settings."}</p>
-          <p>Check the box labeled "Enable Websocket server."</p>
+          <p>Check the box labeled &apos;Enable Websocket server.&apos;</p>
 
           <h2 className="text-xl font-semibold pt-4">How it works</h2>
           <p>
@@ -49,7 +49,7 @@ export default function Configure() {
               href="https://github.com/nostr-protocol/nips/blob/master/53.md"
               className="text-blue-200"
             >
-              kind 30311 "Live Event"
+              kind 30311 &apos;Live Event&apos;
             </a>{" "}
             event that contains a link to your streaming url.
           </p>
@@ -65,7 +65,8 @@ export default function Configure() {
           <p>
             The Stream Manager dock helps you configure all of your settings. It
             will also publish the kind 30311 note to your configured relays when
-            you click "Start Streaming" and "Stop Streaming" in OBS.
+            you click &apos;Start Streaming&apos; and &apos;Stop Streaming&apos;
+            in OBS.
           </p>
           <p>
             The tool will also automatically publish the event every hour as per
