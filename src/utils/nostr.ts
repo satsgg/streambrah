@@ -1,6 +1,6 @@
 import { UserMetadata } from "@/app/store";
 import { nip19, Event as NostrEvent } from "nostr-tools";
-// import { decode } from "light-bolt11-decoder";
+import { z } from "zod";
 
 export const DEFAULT_RELAYS = [
   "wss://relay.damus.io",
@@ -89,6 +89,23 @@ export const pubkeyValidator = (key: string) => {
   }
   return true;
 };
+
+export const zPubkey = z.string().refine(pubkeyValidator, {
+  message: "Invalid key",
+});
+
+export const privkeyValidator = (key: string) => {
+  if (key.startsWith("nsec1")) {
+    if (!validNsecKey(key)) return false;
+  } else if (!validHexPrivkey(key)) {
+    return false;
+  }
+  return true;
+};
+
+export const zPrivkey = z.string().refine(privkeyValidator, {
+  message: "Invalid key",
+});
 
 export const getZapAmountFromReceipt = (zapReceipt: NostrEvent<9735>) => {
   const bolt11 = zapReceipt.tags.find((t) => t[0] == "bolt11");
