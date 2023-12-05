@@ -132,7 +132,7 @@ export default function YouTubePlayer() {
     return () => {
       Pool.close(relays);
     };
-  }, []);
+  }, [pubkey, JSON.stringify(relays)]);
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
     event.target.playVideo();

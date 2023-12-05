@@ -81,7 +81,7 @@ export default function EventManager() {
         pubkey: pubkey,
       };
     });
-  }, [pubkey]);
+  }, [streamConfig.pubkey, pubkey]);
 
   const obs = useRef(new OBSWebSocket());
 

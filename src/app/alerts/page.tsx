@@ -29,6 +29,8 @@ const Alert = ({ alert, relays }: { alert: ZapAlert; relays: string[] }) => {
   );
 };
 
+// TODO: live event ID
+// get settings from stream manager
 export default function Alerts() {
   const [alerts, setAlerts] = useState<ZapAlert[]>([]);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -40,7 +42,6 @@ export default function Alerts() {
   const bc = useRef(new BroadcastChannel("alerts-dock"));
 
   useEffect(() => {
-    console.log("subscribing to relays", relays);
     let sub = Pool.sub(relays, [
       {
         kinds: [9735],
@@ -81,7 +82,7 @@ export default function Alerts() {
     return () => {
       Pool.close(relays);
     };
-  }, []);
+  }, [pubkey, JSON.stringify(relays)]);
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
