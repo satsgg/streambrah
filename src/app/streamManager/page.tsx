@@ -66,7 +66,7 @@ const loadLocalStorageConfig = (): StreamConfig | null => {
 
 // TODO: Hashtags, relays
 // use multiple pages instead of views
-export default function EventManager() {
+export default function StreamManager() {
   const [connected, setConnected] = useState(false);
   const [view, setView] = useState<
     "home" | "participants" | "relays" | "owncast" | "settings"
