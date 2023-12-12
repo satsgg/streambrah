@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import OBSWebSocket from "obs-websocket-js";
-import PrivkeyForm from "./privkeyForm";
+import PrivkeyForm from "./PrivkeyForm";
 import {
   DEFAULT_EVENT_CONFIG,
   publishLiveEvent,

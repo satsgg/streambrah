@@ -1,4 +1,4 @@
-import UserDisplay from "./userDisplay";
+import UserDisplay from "./UserDisplay";
 import RemoveParticipantSVG from "@/svgs/removeParticipant.svg";
 
 export default function RemoveableParticipantForm({

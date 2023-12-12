@@ -1,4 +1,5 @@
-import { AddRelayForm, Relay } from "../relays";
+import AddRelayForm from "../AddRelayForm";
+import Relay from "../Relay";
 import { StreamConfig } from "../types";
 
 export default function Relays({

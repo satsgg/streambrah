@@ -1,44 +1,9 @@
 import { useZodForm } from "@/utils/useZodForm";
-import { relayInit } from "nostr-tools";
-import { useEffect, useState } from "react";
 import { z } from "zod";
 import Button from "./Button";
 
-export function Relay({
-  relayUrl,
-  relays,
-  setRelays,
-}: {
-  relayUrl: string;
-  relays: string[];
-  setRelays: Function;
-}) {
-  const [connected, setConnected] = useState<boolean>(false);
-
-  useEffect(() => {
-    const connect = async () => {
-      const relay = relayInit(relayUrl);
-      await relay.connect();
-      setConnected(true);
-    };
-
-    connect();
-  }, [relayUrl]);
-
-  return (
-    <div className="flex gap-x-2">
-      <span className="rounded border border-gray-500 p-1 w-full">
-        {connected ? "✅" : "❌"} {relayUrl}
-      </span>
-      <button onClick={() => setRelays(relays.filter((r) => r !== relayUrl))}>
-        🗑️
-      </button>
-    </div>
-  );
-}
-
 // TODO: dark and light style for obs / frontend
-export function AddRelayForm({
+export default function AddRelayForm({
   relays,
   setRelays,
 }: {

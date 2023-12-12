@@ -1,6 +1,6 @@
 import { StreamConfig } from "../types";
-import AddParticipantForm from "./addParticipantForm";
-import RemoveableParticipantForm from "./removeableParticipantForm";
+import AddParticipantForm from "./AddParticipantForm";
+import RemoveableParticipantForm from "./RemoveableParticipantForm";
 
 export default function Participants({
   streamConfig,

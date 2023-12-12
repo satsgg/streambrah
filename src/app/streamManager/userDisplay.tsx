@@ -1,7 +1,6 @@
 import { DEFAULT_RELAYS, displayName } from "@/utils/nostr";
 import { fmtMsg } from "@/utils/util";
 import { useProfile } from "../useProfile";
-import { getPublicKey } from "nostr-tools";
 
 export default function UserDisplay({ pubkey }: { pubkey: string }) {
   const { profile, isLoading } = useProfile(pubkey, DEFAULT_RELAYS);
