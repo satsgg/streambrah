@@ -13,6 +13,12 @@ const nextConfig = {
       test: /\.gb$/i,
       type: "asset/resource",
     });
+
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: ["@svgr/webpack"],
+    });
     return config;
   },
 };
