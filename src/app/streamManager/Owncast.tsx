@@ -2,8 +2,10 @@ import { useZodForm } from "@/utils/useZodForm";
 import { z } from "zod";
 import Input from "./Input";
 import Button from "../Button";
+import { useState } from "react";
 
 export default function Owncast() {
+  const [res, setRes] = useState<string>("");
   const {
     register,
     handleSubmit,
@@ -35,8 +37,10 @@ export default function Owncast() {
 
       const json = await res.json();
       console.debug("json", json);
+      setRes(JSON.stringify(json));
     } catch (e) {
       console.error(e);
+      setRes(e.toString());
     }
   };
   return (
@@ -62,6 +66,7 @@ export default function Owncast() {
         />
       </form>
       <Button onClick={handleSubmit(onSubmit)}>Update</Button>
+      <p>{res}</p>
     </div>
   );
 }
