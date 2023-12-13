@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Playlist, Video } from "../util";
 import { Virtuoso } from "react-virtuoso";
-import VideoDisplay from "./videoDisplay";
+import VideoDisplay from "./VideoDisplay";
 import { useSearchParams } from "next/navigation";
 
 export default function Queue() {
