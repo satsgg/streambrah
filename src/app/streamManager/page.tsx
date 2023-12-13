@@ -18,6 +18,7 @@ import RelaysSVG from "@/svgs/relays.svg";
 import ParticipantsSVG from "@/svgs/participants.svg";
 import SettingsSVG from "@/svgs/settings.svg";
 import OwncastSVG from "@/svgs/owncast.svg";
+import Owncast from "./Owncast";
 
 const loadLocalStorageConfig = (): StreamConfig | null => {
   if (typeof window === "undefined") return null;
@@ -206,7 +207,7 @@ export default function StreamManager() {
                 setStreamConfig={setStreamConfig}
               />
             ),
-            owncast: <div></div>,
+            owncast: <Owncast />,
             settings: (
               <Settings
                 streamConfig={streamConfig}

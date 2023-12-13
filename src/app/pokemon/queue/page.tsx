@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { InputDisplay } from "./inputDisplay";
+import { InputDisplay } from "./InputDisplay";
 import { InputAndAuthor } from "../util";
 import { useSearchParams } from "next/navigation";
 
