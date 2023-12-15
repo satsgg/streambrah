@@ -207,7 +207,12 @@ export default function StreamManager() {
                 setStreamConfig={setStreamConfig}
               />
             ),
-            owncast: <Owncast />,
+            owncast: (
+              <Owncast
+                streamConfig={streamConfig}
+                setStreamConfig={setStreamConfig}
+              />
+            ),
             settings: (
               <Settings
                 streamConfig={streamConfig}
