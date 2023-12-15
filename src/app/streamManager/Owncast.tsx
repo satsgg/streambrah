@@ -5,6 +5,9 @@ import Button from "../Button";
 import { useEffect, useState } from "react";
 import { StreamConfig } from "../types";
 
+// TODO: Persist url when navigating to different view, add to local storage
+// refactor local storage
+// move interval to page
 export default function Owncast({
   streamConfig,
   setStreamConfig,
@@ -46,10 +49,12 @@ export default function Owncast({
     }
   };
 
+  // should move this to main page? values are disappearing after
+  // exiting owncast view... need to persist and run in background always
   useEffect(() => {
     if (!connected || streamConfig.status !== "live") return;
 
-    const fetchInterval = setTimeout(async () => {
+    const fetchInterval = setInterval(async () => {
       const url = getValues("url");
       const key = getValues("accessKey");
       if (!url || !key) return;
@@ -63,6 +68,7 @@ export default function Owncast({
         });
         const json = await res.json();
         if (!json.viewerCount) return;
+
         setStreamConfig((prev: StreamConfig) => {
           return {
             ...prev,
@@ -72,7 +78,7 @@ export default function Owncast({
       } catch (e) {
         console.error(e);
       }
-    }, 15000);
+    }, 30000); // getting rate limited at 15s on damus
 
     return () => {
       clearInterval(fetchInterval);

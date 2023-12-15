@@ -26,6 +26,7 @@ const loadLocalStorageConfig = (): StreamConfig | null => {
   if (!storeConfig) return null;
   let config: StreamConfig = JSON.parse(storeConfig);
   config.p = [];
+  config.prevStatus = "ended";
 
   return config;
 };
@@ -109,6 +110,8 @@ export default function StreamManager() {
 
     obs.current.on("ConnectionOpened", () => {
       console.debug("connected!");
+      // TODO: Should check if stream is running here...
+      // might have refreshed stream manager while stream was running
       setConnected(true);
     });
 
@@ -116,7 +119,6 @@ export default function StreamManager() {
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STARTED") {
         console.debug("output started", event);
         setStreamConfig((prev) => {
-          // publishLiveEvent(privkey, prev, "live");
           return {
             ...prev,
             prevStatus: "ended",
@@ -127,7 +129,6 @@ export default function StreamManager() {
       if (event.outputState === "OBS_WEBSOCKET_OUTPUT_STOPPED") {
         console.debug("output started", event);
         setStreamConfig((prev) => {
-          // publishLiveEvent(privkey, prev, "ended");
           return {
             ...prev,
             prevStatus: "live",
