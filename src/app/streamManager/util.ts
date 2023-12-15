@@ -50,6 +50,8 @@ export const publishLiveEvent = async (
     content: "",
   };
   if (streamConfig.image) event.tags.push(["image", streamConfig.image]);
+  if (streamConfig.currentParticipants)
+    event.tags.push(["current_participants", streamConfig.currentParticipants]);
 
   // add participants
   streamConfig.p.forEach((p) => {
