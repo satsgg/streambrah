@@ -225,7 +225,7 @@ export default function StreamManager() {
   }, [connected, streamConfig.status]);
 
   useEffect(() => {
-    if (!streamConfig.pubkey || streamConfig.status !== "live") {
+    if (!pubkey || streamConfig.status !== "live") {
       return;
     }
     const hourRefreshInterval = setInterval(() => {
@@ -234,7 +234,7 @@ export default function StreamManager() {
     return () => {
       clearInterval(hourRefreshInterval);
     };
-  });
+  }, [pubkey, streamConfig.status]);
 
   useEffect(() => {
     if (!privkey) return;
