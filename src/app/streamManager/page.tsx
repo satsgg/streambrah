@@ -4,6 +4,7 @@ import OBSWebSocket from "obs-websocket-js";
 import PrivkeyForm from "./PrivkeyForm";
 import {
   DEFAULT_EVENT_CONFIG,
+  DEFAULT_OWNCAST_CONFIG,
   publishLiveEvent,
   publishNowPlaying,
 } from "./util";
@@ -12,7 +13,7 @@ import Participants from "./Participants";
 import Relays from "./Relays";
 import Settings from "./Settings";
 import { STREAM_CONFIG_CHANNEL, STREAM_CONFIG_KEY } from "../constants";
-import { StreamConfig } from "../types";
+import { ManagerConfig, OwncastConfig, StreamConfig } from "../types";
 import HomeSVG from "@/svgs/home.svg";
 import RelaysSVG from "@/svgs/relays.svg";
 import ParticipantsSVG from "@/svgs/participants.svg";
@@ -20,15 +21,17 @@ import SettingsSVG from "@/svgs/settings.svg";
 import OwncastSVG from "@/svgs/owncast.svg";
 import Owncast from "./Owncast";
 
-const loadLocalStorageConfig = (): StreamConfig | null => {
+const loadLocalStorage = (pubkey: string): ManagerConfig | null => {
   if (typeof window === "undefined") return null;
-  const storeConfig = localStorage.getItem(STREAM_CONFIG_KEY);
+  const storeConfig = localStorage.getItem(pubkey);
   if (!storeConfig) return null;
-  let config: StreamConfig = JSON.parse(storeConfig);
-  config.p = [];
-  config.prevStatus = "ended";
 
-  return config;
+  const managerConfig: ManagerConfig = JSON.parse(storeConfig);
+  console.debug("managerConfig", managerConfig);
+  managerConfig.streamConfig.p = [];
+  managerConfig.streamConfig.prevStatus = "ended";
+
+  return managerConfig;
 };
 
 // TODO: Hashtags
@@ -40,19 +43,42 @@ export default function StreamManager() {
   const [privkey, setPrivkey] = useState<string>("");
   const [pubkey, setPubkey] = useState<string>("");
   // TODO: check if loadLocalStorage is running unnecessarily...
-  const [streamConfig, setStreamConfig] = useState<StreamConfig>(
-    loadLocalStorageConfig() ?? DEFAULT_EVENT_CONFIG
+  const [streamConfig, setStreamConfig] =
+    useState<StreamConfig>(DEFAULT_EVENT_CONFIG);
+  const [owncastConfig, setOwncastConfig] = useState<OwncastConfig>(
+    DEFAULT_OWNCAST_CONFIG
   );
 
   useEffect(() => {
-    if (streamConfig.pubkey === pubkey) return;
-    setStreamConfig((prev) => {
-      return {
-        ...prev,
-        pubkey: pubkey,
-      };
-    });
-  }, [streamConfig.pubkey, pubkey]);
+    if (!pubkey) {
+      setStreamConfig(DEFAULT_EVENT_CONFIG);
+      setOwncastConfig(DEFAULT_OWNCAST_CONFIG);
+    }
+    const managerConfig = loadLocalStorage(pubkey);
+    if (!managerConfig) {
+      setStreamConfig((prev) => {
+        return {
+          ...prev,
+          pubkey: pubkey,
+        };
+      });
+      return;
+    }
+
+    setStreamConfig(managerConfig.streamConfig);
+    setOwncastConfig(managerConfig.owncastConfig);
+  }, [pubkey]);
+
+  useEffect(() => {
+    if (!pubkey || !streamConfig.pubkey) return;
+    localStorage.setItem(
+      streamConfig.pubkey,
+      JSON.stringify({
+        streamConfig: { ...streamConfig },
+        owncastConfig: { ...owncastConfig },
+      })
+    );
+  }, [JSON.stringify(streamConfig)]);
 
   const obs = useRef(new OBSWebSocket());
 
@@ -162,7 +188,6 @@ export default function StreamManager() {
   useEffect(() => {
     if (!privkey) return;
     console.debug("streamConfig", streamConfig);
-    localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(streamConfig));
     bc.current.postMessage(streamConfig);
 
     if (streamConfig.status === "live") {
@@ -212,6 +237,8 @@ export default function StreamManager() {
               <Owncast
                 streamConfig={streamConfig}
                 setStreamConfig={setStreamConfig}
+                owncastConfig={owncastConfig}
+                setOwncastConfig={setOwncastConfig}
               />
             ),
             settings: (

@@ -16,3 +16,12 @@ export type StreamConfig = {
   p: string[];
   relays: string[];
 };
+
+export type OwncastConfig = {
+  apiUrl: string;
+};
+
+export type ManagerConfig = {
+  streamConfig: StreamConfig;
+  owncastConfig: OwncastConfig;
+};

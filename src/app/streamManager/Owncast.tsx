@@ -3,7 +3,7 @@ import { z } from "zod";
 import Input from "./Input";
 import Button from "../Button";
 import { useEffect, useState } from "react";
-import { StreamConfig } from "../types";
+import { OwncastConfig, StreamConfig } from "../types";
 
 // TODO: Persist url when navigating to different view, add to local storage
 // refactor local storage
@@ -11,9 +11,13 @@ import { StreamConfig } from "../types";
 export default function Owncast({
   streamConfig,
   setStreamConfig,
+  owncastConfig,
+  setOwncastConfig,
 }: {
   streamConfig: StreamConfig;
   setStreamConfig: Function;
+  owncastConfig: OwncastConfig;
+  setOwncastConfig: Function;
 }) {
   const [connected, setConnected] = useState<null | boolean>(null);
   const {
@@ -28,7 +32,7 @@ export default function Owncast({
       accessKey: z.string().min(1),
     }),
     defaultValues: {
-      url: "",
+      url: owncastConfig.apiUrl,
       accessKey: "",
     },
   });
@@ -43,6 +47,20 @@ export default function Owncast({
       });
 
       setConnected(true);
+      setOwncastConfig((prev: OwncastConfig) => {
+        const newOwncastConfig: OwncastConfig = {
+          ...prev,
+          apiUrl: data.url,
+        };
+        localStorage.setItem(
+          streamConfig.pubkey,
+          JSON.stringify({
+            streamConfig: { ...streamConfig },
+            owncastConfig: newOwncastConfig,
+          })
+        );
+        return newOwncastConfig;
+      });
     } catch (e) {
       console.error(e);
       setConnected(false);

@@ -8,7 +8,7 @@ import {
 } from "nostr-tools";
 import { Pool } from "../Pool";
 import { DEFAULT_RELAYS } from "@/utils/nostr";
-import { StreamConfig } from "../types";
+import { OwncastConfig, StreamConfig } from "../types";
 
 export const signEventPrivkey = (
   unsignedEvent: UnsignedEvent,
@@ -137,4 +137,8 @@ export const DEFAULT_EVENT_CONFIG: StreamConfig = {
   currentParticipants: "0",
   p: [],
   relays: [],
+};
+
+export const DEFAULT_OWNCAST_CONFIG: OwncastConfig = {
+  apiUrl: "",
 };
