@@ -12,7 +12,7 @@ import Home from "./Home";
 import Participants from "./Participants";
 import Relays from "./Relays";
 import Settings from "./Settings";
-import { STREAM_CONFIG_CHANNEL, STREAM_CONFIG_KEY } from "../constants";
+import { STREAM_CONFIG_CHANNEL } from "../constants";
 import { ManagerConfig, OwncastConfig, StreamConfig } from "../types";
 import HomeSVG from "@/svgs/home.svg";
 import RelaysSVG from "@/svgs/relays.svg";
@@ -48,6 +48,7 @@ export default function StreamManager() {
   const [owncastConfig, setOwncastConfig] = useState<OwncastConfig>(
     DEFAULT_OWNCAST_CONFIG
   );
+  const [owncastApiKey, setOwncastApiKey] = useState("");
 
   useEffect(() => {
     if (!pubkey) {
@@ -186,6 +187,43 @@ export default function StreamManager() {
   };
 
   useEffect(() => {
+    if (
+      !owncastApiKey ||
+      !owncastConfig.apiUrl ||
+      streamConfig.status !== "live"
+    )
+      return;
+
+    const fetchInterval = setInterval(async () => {
+      if (!owncastConfig.apiUrl || !owncastApiKey) return;
+
+      try {
+        const res = await fetch(`${owncastConfig.apiUrl}/api/status`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${owncastApiKey}`,
+          },
+        });
+        const json = await res.json();
+        if (!json.viewerCount) return;
+
+        setStreamConfig((prev: StreamConfig) => {
+          return {
+            ...prev,
+            currentParticipants: json.viewerCount.toString(),
+          };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }, 30000); // getting rate limited at 15s on damus
+
+    return () => {
+      clearInterval(fetchInterval);
+    };
+  }, [connected, streamConfig.status]);
+
+  useEffect(() => {
     if (!privkey) return;
     console.debug("streamConfig", streamConfig);
     bc.current.postMessage(streamConfig);
@@ -236,9 +274,10 @@ export default function StreamManager() {
             owncast: (
               <Owncast
                 streamConfig={streamConfig}
-                setStreamConfig={setStreamConfig}
                 owncastConfig={owncastConfig}
                 setOwncastConfig={setOwncastConfig}
+                owncastApiKey={owncastApiKey}
+                setOwncastApiKey={setOwncastApiKey}
               />
             ),
             settings: (

@@ -10,14 +10,16 @@ import { OwncastConfig, StreamConfig } from "../types";
 // move interval to page
 export default function Owncast({
   streamConfig,
-  setStreamConfig,
   owncastConfig,
   setOwncastConfig,
+  owncastApiKey,
+  setOwncastApiKey,
 }: {
   streamConfig: StreamConfig;
-  setStreamConfig: Function;
   owncastConfig: OwncastConfig;
   setOwncastConfig: Function;
+  owncastApiKey: string;
+  setOwncastApiKey: Function;
 }) {
   const [connected, setConnected] = useState<null | boolean>(null);
   const {
@@ -33,7 +35,7 @@ export default function Owncast({
     }),
     defaultValues: {
       url: owncastConfig.apiUrl,
-      accessKey: "",
+      accessKey: owncastApiKey,
     },
   });
 
@@ -47,6 +49,7 @@ export default function Owncast({
       });
 
       setConnected(true);
+      setOwncastApiKey(data.accessKey);
       setOwncastConfig((prev: OwncastConfig) => {
         const newOwncastConfig: OwncastConfig = {
           ...prev,
@@ -66,42 +69,6 @@ export default function Owncast({
       setConnected(false);
     }
   };
-
-  // should move this to main page? values are disappearing after
-  // exiting owncast view... need to persist and run in background always
-  useEffect(() => {
-    if (!connected || streamConfig.status !== "live") return;
-
-    const fetchInterval = setInterval(async () => {
-      const url = getValues("url");
-      const key = getValues("accessKey");
-      if (!url || !key) return;
-
-      try {
-        const res = await fetch(`${url}/api/status`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${key}`,
-          },
-        });
-        const json = await res.json();
-        if (!json.viewerCount) return;
-
-        setStreamConfig((prev: StreamConfig) => {
-          return {
-            ...prev,
-            currentParticipants: json.viewerCount.toString(),
-          };
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }, 30000); // getting rate limited at 15s on damus
-
-    return () => {
-      clearInterval(fetchInterval);
-    };
-  }, [connected, streamConfig.status]);
 
   return (
     <div className="flex flex-col h-full gap-4 py-2 px-4 overflow-y-scroll">
