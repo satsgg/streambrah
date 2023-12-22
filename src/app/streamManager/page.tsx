@@ -29,6 +29,7 @@ const loadLocalStorage = (pubkey: string): ManagerConfig | null => {
   const managerConfig: ManagerConfig = JSON.parse(storeConfig);
   console.debug("managerConfig", managerConfig);
   managerConfig.streamConfig.p = [];
+  delete managerConfig.streamConfig.currentParticipants;
   managerConfig.streamConfig.prevStatus = "ended";
 
   return managerConfig;
@@ -222,6 +223,18 @@ export default function StreamManager() {
       clearInterval(fetchInterval);
     };
   }, [connected, streamConfig.status]);
+
+  useEffect(() => {
+    if (!streamConfig.pubkey || streamConfig.status !== "live") {
+      return;
+    }
+    const hourRefreshInterval = setInterval(() => {
+      publishLiveEvent(privkey, streamConfig, "live");
+    }, 3500000);
+    return () => {
+      clearInterval(hourRefreshInterval);
+    };
+  });
 
   useEffect(() => {
     if (!privkey) return;
