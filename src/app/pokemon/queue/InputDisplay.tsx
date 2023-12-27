@@ -12,6 +12,11 @@ export const InputDisplay = ({
 }) => {
   const { profile, isLoading } = useProfile(input.pubkey, relays);
 
+  const inputString = () => {
+    if (input.multiplier == 1) return input.input;
+    return input.input + input.multiplier;
+  };
+
   return (
     <div className="flex justify-between text-white py-1 text-xl font-semibold items-center">
       <div className="flex gap-2 items-center">
@@ -29,7 +34,7 @@ export const InputDisplay = ({
           {/* <p className="">⚡{fmtNumber(input.amount, true)}</p> */}
         </div>
       </div>
-      <p>{input.input}</p>
+      <p>{inputString()}</p>
     </div>
   );
 };

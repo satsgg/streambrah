@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Event as NostrEvent } from "nostr-tools";
 import { Pool } from "../Pool";
-import { InputAndAuthor, parseContent, parseInput } from "./util";
+import { InputAndAuthor, parseContent, parseZapContent } from "./util";
 import { getZapAmountFromReceipt, parseZapRequest } from "@/utils/nostr";
 
 const testInput = {
@@ -42,6 +42,7 @@ export const useInputQueue = (
         if (!input) return;
         const inputAndAuthor: InputAndAuthor = {
           input: input,
+          multiplier: 1,
           id: event.id,
           pubkey: event.pubkey,
           amount: 0,
@@ -69,11 +70,12 @@ export const useInputQueue = (
       console.debug("amount", amount);
       if (!amount) return;
 
-      const input = parseContent(zap.content);
+      const input = parseZapContent(zap.content);
       if (!input) return;
 
       const inputAndAuthor: InputAndAuthor = {
-        input: input,
+        input: input.input,
+        multiplier: input.multiplier,
         id: zap.id,
         pubkey: zap.pubkey,
         amount: amount,

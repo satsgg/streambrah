@@ -9,6 +9,7 @@ import {
   Settings,
   getAutoSaveFromLS,
   getSettingsFromLS,
+  parseZapContent,
 } from "../util";
 import Button from "@/app/Button";
 import GameboySVG from "@/svgs/gameboy.svg";
@@ -18,6 +19,7 @@ import SettingsSVG from "@/svgs/settings.svg";
 const partialInput = {
   pubkey: "e9038e10916d910869db66f3c9a1f41535967308b47ce3136c98f1a6a22a6150",
   amount: 0,
+  multiplier: 1,
 };
 
 export default function PokemonDock() {
@@ -48,12 +50,21 @@ export default function PokemonDock() {
 
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
 
-  const sendInput = (input: string) => {
-    const fullInput = {
+  const sendInput = (input: string, zap: boolean) => {
+    let fullInput = {
       ...partialInput,
       id: (Math.random() + 1).toString(36).substring(2),
       input: input,
     };
+
+    if (zap) {
+      fullInput.amount = 1;
+      const parsedInput = parseZapContent(input);
+      if (!parsedInput) return null;
+      fullInput.input = parsedInput.input;
+      fullInput.multiplier = parsedInput.multiplier;
+    }
+
     bc.current.postMessage({
       action: "input",
       input: fullInput,
@@ -178,6 +189,12 @@ export default function PokemonDock() {
                   onClick={() => sendInput("select")}
                 >
                   Select
+                </button>
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 rounded px-2 py-1"
+                  onClick={() => sendInput("start9", true)}
+                >
+                  Start9
                 </button>
               </div>
             </div>

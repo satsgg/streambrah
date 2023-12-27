@@ -16,25 +16,13 @@ export enum Input {
 // could probably just store the events themselves after validating the content...
 export type InputAndAuthor = {
   input: string;
+  multiplier: number;
   id: string;
   pubkey: string;
   amount: number;
 };
 
-export const parseInput = (event: NostrEvent): InputAndAuthor | null => {
-  const parsedContent = event.content.split(" ")[0].toLowerCase();
-  if (!(parsedContent in Input)) {
-    return null;
-  }
-
-  return {
-    input: parsedContent,
-    id: event.id,
-    pubkey: event.pubkey,
-    amount: 0,
-  };
-};
-
+// TODO: If zap, allow 1-9 multiplier
 export const parseContent = (content: string): string | null => {
   const parsedContent = content.split(" ")[0].toLowerCase();
   if (!(parsedContent in Input)) {
@@ -42,6 +30,27 @@ export const parseContent = (content: string): string | null => {
   }
 
   return parsedContent;
+};
+
+export const parseZapContent = (
+  content: string
+): { input: string; multiplier: number } | null => {
+  let parsedContent = content.split(" ")[0].toLowerCase();
+
+  let multiplier = 1;
+  if (/[1-9]/.test(parsedContent.slice(-1))) {
+    multiplier = parseInt(parsedContent.slice(-1));
+    parsedContent = parsedContent.slice(0, -1);
+  }
+
+  if (!(parsedContent in Input)) {
+    return null;
+  }
+
+  return {
+    input: parsedContent,
+    multiplier: multiplier,
+  };
 };
 
 export const executeMove = (input: string) => {

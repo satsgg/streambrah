@@ -79,8 +79,14 @@ export default function Pokemon() {
       if (action === "input") {
         const input = event.data.input;
         console.log("adding input", input);
-        setInputs((prev) => {
-          return [...prev, input];
+        setInputs((prevInputs) => {
+          if (prevInputs.some((i) => i.id === input.id)) {
+            return prevInputs;
+          }
+          let sortedInputs = [...prevInputs];
+          sortedInputs.push(input);
+          sortedInputs.sort((a, b) => b.amount - a.amount);
+          return sortedInputs;
         });
         return;
       }
