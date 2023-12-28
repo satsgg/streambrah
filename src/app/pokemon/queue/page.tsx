@@ -2,11 +2,14 @@
 import { useRef, useEffect, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { InputDisplay } from "./InputDisplay";
-import { InputAndAuthor } from "../util";
+import { InputAndAuthor, Playlist } from "../util";
 import { useSearchParams } from "next/navigation";
 
 export default function Queue() {
-  const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
+  const [playlist, setPlaylist] = useState<Playlist>({
+    nowPlaying: null,
+    queue: [],
+  });
   const searchParams = useSearchParams();
   const relays = searchParams.getAll("relay");
 
@@ -14,15 +17,17 @@ export default function Queue() {
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
-      console.debug("event data received", event.data);
-      setInputs(event.data);
+      setPlaylist(event.data);
     };
   }, []);
 
   return (
     <div className="h-screen w-full text-white">
+      {playlist.nowPlaying && (
+        <InputDisplay input={playlist.nowPlaying} relays={relays} nowPlaying />
+      )}
       <Virtuoso
-        data={inputs}
+        data={playlist.queue}
         className="no-scrollbar"
         itemContent={(index, input) => {
           return <InputDisplay input={input} relays={relays} />;

@@ -22,6 +22,11 @@ export type InputAndAuthor = {
   amount: number;
 };
 
+export type Playlist = {
+  nowPlaying: InputAndAuthor | null;
+  queue: InputAndAuthor[];
+};
+
 // TODO: If zap, allow 1-9 multiplier
 export const parseContent = (content: string): string | null => {
   const parsedContent = content.split(" ")[0].toLowerCase();

@@ -70,7 +70,7 @@ export default function Pokemon() {
 
   useEffect(() => {
     console.debug("sending inputs over channel");
-    bcQueue.current.postMessage(playlist.queue);
+    bcQueue.current.postMessage(playlist);
     if (!playlist.nowPlaying && playlist.queue.length > 0) {
       startNextInput();
     }

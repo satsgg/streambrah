@@ -6,9 +6,11 @@ import { fmtMsg, fmtNumber } from "@/utils/util";
 export const InputDisplay = ({
   input,
   relays,
+  nowPlaying = false,
 }: {
   input: InputAndAuthor;
   relays: string[];
+  nowPlaying?: boolean;
 }) => {
   const { profile, isLoading } = useProfile(input.pubkey, relays);
 
@@ -18,7 +20,10 @@ export const InputDisplay = ({
   };
 
   return (
-    <div className="flex justify-between text-white py-1 text-xl font-semibold items-center">
+    <div
+      className={`${nowPlaying && "bg-stone-800 rounded"} 
+      flex justify-between text-white py-1 text-xl font-semibold items-center px-2`}
+    >
       <div className="flex gap-2 items-center">
         {profile?.picture && (
           <img
@@ -34,7 +39,7 @@ export const InputDisplay = ({
           {/* <p className="">⚡{fmtNumber(input.amount, true)}</p> */}
         </div>
       </div>
-      <p>{inputString()}</p>
+      <p>{inputString().toUpperCase()}</p>
     </div>
   );
 };

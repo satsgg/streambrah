@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Event as NostrEvent } from "nostr-tools";
 import { Pool } from "../Pool";
-import { InputAndAuthor, parseContent, parseZapContent } from "./util";
+import {
+  InputAndAuthor,
+  Playlist,
+  parseContent,
+  parseZapContent,
+} from "./util";
 import { getZapAmountFromReceipt, parseZapRequest } from "@/utils/nostr";
-
-type Playlist = {
-  nowPlaying: InputAndAuthor | null;
-  queue: InputAndAuthor[];
-};
 
 export const useInputQueue = (
   pubkey: string | null,
