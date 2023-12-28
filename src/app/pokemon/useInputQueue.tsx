@@ -4,11 +4,9 @@ import { Pool } from "../Pool";
 import { InputAndAuthor, parseContent, parseZapContent } from "./util";
 import { getZapAmountFromReceipt, parseZapRequest } from "@/utils/nostr";
 
-const testInput = {
-  input: "a",
-  id: "7c15cb2fe8e8e1aa7ba92b53253facf592d0c833b163420c4e7223206c6287a8",
-  pubkey: "0bed926df26089c6869621abf8b27858dd0b61f2c3c556e84fd9c08f0f499344",
-  amount: 0,
+type Playlist = {
+  nowPlaying: InputAndAuthor | null;
+  queue: InputAndAuthor[];
 };
 
 export const useInputQueue = (
@@ -16,8 +14,11 @@ export const useInputQueue = (
   d: string | null,
   relays: string[]
 ) => {
-  const [inputs, setInputs] = useState<InputAndAuthor[]>([]);
-  // const [inputs, setInputs] = useState<InputAndAuthor[]>(
+  const [playlist, setPlaylist] = useState<Playlist>({
+    nowPlaying: null,
+    queue: [],
+  });
+  // const [playlist, setPlaylist] = useState<InputAndAuthor[]>(
   //   Array(100).fill(testInput)
   // );
   const now = useRef(Math.floor(Date.now() / 1000));
@@ -48,11 +49,14 @@ export const useInputQueue = (
           amount: 0,
         };
         console.debug("adding input", inputAndAuthor);
-        setInputs((prevInputs) => {
-          if (prevInputs.some((i) => i.id === event.id)) {
-            return prevInputs;
+        setPlaylist((prev) => {
+          if (prev.queue.some((i) => i.id === event.id)) {
+            return prev;
           }
-          return [...prevInputs, inputAndAuthor];
+          return {
+            nowPlaying: prev.nowPlaying,
+            queue: [...prev.queue, inputAndAuthor],
+          };
         });
         return;
       }
@@ -82,26 +86,29 @@ export const useInputQueue = (
       };
       console.debug("adding input", inputAndAuthor);
 
-      setInputs((prevInputs) => {
-        if (prevInputs.some((i) => i.id === zap.id)) {
-          return prevInputs;
+      setPlaylist((prev) => {
+        if (prev.queue.some((i) => i.id === zap.id)) {
+          return prev;
         }
-        let sortedInputs = [...prevInputs];
+        let sortedInputs = [...prev.queue];
         // thought it would be faster to put it in front first..
         // but the sort func places newer in front if same amount
         // sortedInputs.unshift(inputAndAuthor);
         sortedInputs.push(inputAndAuthor);
         sortedInputs.sort((a, b) => b.amount - a.amount);
-        return sortedInputs;
+        return {
+          nowPlaying: prev.nowPlaying,
+          queue: sortedInputs,
+        };
       });
     });
 
     return () => {
-      // setInputs([]); will cause infinite loop with dependencies
+      // setPlaylist([]); will cause infinite loop with dependencies
       // why did i add it ever?
       Pool.close(relays);
     };
   }, [pubkey, d, JSON.stringify(relays)]);
 
-  return { inputs, setInputs };
+  return { playlist, setPlaylist };
 };

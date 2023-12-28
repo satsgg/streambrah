@@ -50,7 +50,7 @@ export default function PokemonDock() {
 
   const bc = useRef(new BroadcastChannel("pokemon-dock"));
 
-  const sendInput = (input: string, zap: boolean) => {
+  const sendInput = (input: string, zap?: boolean) => {
     let fullInput = {
       ...partialInput,
       id: (Math.random() + 1).toString(36).substring(2),

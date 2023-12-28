@@ -53,6 +53,10 @@ export const parseZapContent = (
   };
 };
 
+export const timer = (ms: number) => {
+  return new Promise((res) => setTimeout(res, ms));
+};
+
 export const executeMove = (input: string) => {
   console.log("executing input: " + input);
   window.dispatchEvent(new KeyboardEvent("keydown", { code: input }));

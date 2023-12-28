@@ -9,11 +9,13 @@ import { useInputQueue } from "./useInputQueue";
 import {
   DEFAULT_SETTINGS,
   Input,
+  InputAndAuthor,
   Settings,
   executeMove,
   getSettingsFromLS,
   jsonToState,
   stateToJson,
+  timer,
 } from "./util";
 import useStreamConfig from "../useStreamConfig";
 
@@ -52,7 +54,7 @@ export default function Pokemon() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const streamConfig = useStreamConfig();
 
-  const { inputs, setInputs } = useInputQueue(
+  const { playlist, setPlaylist } = useInputQueue(
     streamConfig?.pubkey || pubkey,
     streamConfig?.d || d,
     streamConfig?.relays || relays
@@ -68,8 +70,11 @@ export default function Pokemon() {
 
   useEffect(() => {
     console.debug("sending inputs over channel");
-    bcQueue.current.postMessage(inputs);
-  }, [inputs]);
+    bcQueue.current.postMessage(playlist.queue);
+    if (!playlist.nowPlaying && playlist.queue.length > 0) {
+      startNextInput();
+    }
+  }, [playlist.queue]);
 
   useEffect(() => {
     bcDock.current.onmessage = (event) => {
@@ -79,14 +84,17 @@ export default function Pokemon() {
       if (action === "input") {
         const input = event.data.input;
         console.log("adding input", input);
-        setInputs((prevInputs) => {
-          if (prevInputs.some((i) => i.id === input.id)) {
-            return prevInputs;
+        setPlaylist((prev) => {
+          if (prev.queue.some((i) => i.id === input.id)) {
+            return prev;
           }
-          let sortedInputs = [...prevInputs];
+          let sortedInputs = [...prev.queue];
           sortedInputs.push(input);
           sortedInputs.sort((a, b) => b.amount - a.amount);
-          return sortedInputs;
+          return {
+            nowPlaying: prev.nowPlaying,
+            queue: sortedInputs,
+          };
         });
         return;
       }
@@ -140,25 +148,25 @@ export default function Pokemon() {
     // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. <URL>
   };
 
-  useEffect(() => {
-    if (!isPlaying) return;
-    console.debug("isPlaying", isPlaying, "inputTimer", settings.inputTimer);
-    const inputInterval = setInterval(() => {
-      setInputs((prev) => {
-        if (prev.length == 0) return [];
-        // @ts-ignore
-        const input = Input[prev[0].input];
-        // TODO: saveInterval isn't called twice... even with strict mode. it's still fine tho
-        // maybe should execute move outside of this
-        executeMove(input);
-        return prev.slice(1);
-      });
-    }, settings.inputTimer);
+  const startNextInput = () => {
+    setPlaylist((prev) => {
+      let nextToPlay = prev.queue[0] ?? null;
+      return { nowPlaying: nextToPlay, queue: [...prev.queue.slice(1)] };
+    });
+  };
 
-    return () => {
-      clearInterval(inputInterval);
+  useEffect(() => {
+    const run = async () => {
+      if (!isPlaying || !playlist.nowPlaying) return;
+      for (let i = 0; i < playlist.nowPlaying.multiplier; i++) {
+        // @ts-ignore
+        executeMove(Input[playlist.nowPlaying.input]);
+        await timer(2000);
+      }
+      startNextInput();
     };
-  }, [isPlaying, settings.inputTimer]);
+    run();
+  }, [isPlaying, playlist.nowPlaying]);
 
   useEffect(() => {
     if (!isPlaying || !settings.autoSave) return;
