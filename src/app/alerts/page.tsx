@@ -11,7 +11,10 @@ import {
 import { fmtMsg, fmtNumber } from "@/utils/util";
 import { useProfile } from "../useProfile";
 import { ZapAlert } from "./util";
+import useStreamConfig from "../useStreamConfig";
+import { useAlertQueue } from "./useAlertQueue";
 
+// TODO: Check for flashing?
 const Alert = ({ alert, relays }: { alert: ZapAlert; relays: string[] }) => {
   const { profile, isLoading } = useProfile(alert.pubkey, relays);
 
@@ -29,60 +32,21 @@ const Alert = ({ alert, relays }: { alert: ZapAlert; relays: string[] }) => {
   );
 };
 
-// TODO: live event ID
-// get settings from stream manager
 export default function Alerts() {
-  const [alerts, setAlerts] = useState<ZapAlert[]>([]);
   const [alertVisible, setAlertVisible] = useState(false);
   const searchParams = useSearchParams();
   const pubkey = searchParams.get("pubkey");
+  const d = searchParams.get("d");
   const relays = searchParams.getAll("relay");
-  const now = useRef(Math.floor(Date.now() / 1000));
+  const streamConfig = useStreamConfig();
+
+  const { alerts, setAlerts } = useAlertQueue(
+    streamConfig?.pubkey || pubkey,
+    streamConfig?.d || d,
+    streamConfig?.relays || relays
+  );
 
   const bc = useRef(new BroadcastChannel("alerts-dock"));
-
-  useEffect(() => {
-    let sub = Pool.sub(relays, [
-      {
-        kinds: [9735],
-        "#p": [pubkey || ""],
-        //TODO: #a
-        // since: now.current,
-
-        // test with old zaps
-        since: now.current - 1000 * 60 * 60 * 1,
-        // limit: 25,
-      },
-    ]);
-
-    sub.on("event", (event: NostrEvent<9735>) => {
-      console.log("event", event);
-      const zapRequestTag = event.tags.find((t) => t[0] == "description");
-      if (!zapRequestTag || !zapRequestTag[1]) return;
-
-      const zapRequest: NostrEvent<9734> = JSON.parse(zapRequestTag[1]);
-      const zap = parseZapRequest(zapRequest);
-      console.debug("zap", zap);
-      if (!zap) return;
-
-      const amount = getZapAmountFromReceipt(event);
-      console.debug("amount", amount);
-      if (!amount) return;
-
-      const zapAlert: ZapAlert = {
-        pubkey: zap.pubkey,
-        id: zap.id,
-        amount: amount,
-        content: zap.content,
-      };
-
-      addToQueue(zapAlert);
-    });
-
-    return () => {
-      Pool.close(relays);
-    };
-  }, [pubkey, JSON.stringify(relays)]);
 
   useEffect(() => {
     bc.current.onmessage = (event) => {
@@ -91,23 +55,20 @@ export default function Alerts() {
       console.debug("channel message", type, value);
       switch (type) {
         case "zap":
-          addToQueue(value);
+          const zap: ZapAlert = value;
+          setAlerts((prev) => {
+            if (prev.some((z) => z.id === zap.id)) {
+              return prev;
+            }
+
+            return [...prev, zap];
+          });
           break;
         default:
           console.error("invalid event message");
       }
     };
   }, []);
-
-  const addToQueue = (zap: ZapAlert) => {
-    setAlerts((prev) => {
-      if (prev.some((z) => z.id === zap.id)) {
-        return prev;
-      }
-
-      return [...prev, zap];
-    });
-  };
 
   useEffect(() => {
     const currentAlert = alerts[0];
