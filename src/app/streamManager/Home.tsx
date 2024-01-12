@@ -56,7 +56,7 @@ export default function Home({
             {streamConfig.title && (
               <h3 className="truncate font-bold">{streamConfig.title}</h3>
             )}
-            <p className="truncate">
+            <p className="truncate text-sm">
               {!isLoading && displayName(pubkey, profile)}
             </p>
           </div>

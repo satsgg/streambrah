@@ -42,6 +42,16 @@ export const useAlertQueue = (
       console.debug("amount", amount);
       if (!amount) return;
 
+      // if pokemon input, return
+      if (
+        /^(start|select|up|left|down|right|a|b)[1-9]?$/.test(
+          zap.content.toLowerCase()
+        )
+      ) {
+        console.debug("pokemon input");
+        return;
+      }
+
       const zapAlert: ZapAlert = {
         pubkey: zap.pubkey,
         id: zap.id,
@@ -49,7 +59,6 @@ export const useAlertQueue = (
         content: zap.content,
       };
 
-      // addToQueue(zapAlert);
       setAlerts((prev) => {
         if (prev.some((z) => z.id === zap.id)) {
           return prev;

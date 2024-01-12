@@ -56,6 +56,15 @@ export default function Alerts() {
       switch (type) {
         case "zap":
           const zap: ZapAlert = value;
+          if (
+            /^(start|select|up|left|down|right|a|b)[1-9]?$/.test(
+              zap.content.toLowerCase()
+            )
+          ) {
+            console.debug("pokemon input");
+            return;
+          }
+
           setAlerts((prev) => {
             if (prev.some((z) => z.id === zap.id)) {
               return prev;
