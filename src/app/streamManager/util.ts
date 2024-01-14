@@ -44,11 +44,11 @@ export const publishLiveEvent = async (
       ["title", streamConfig.title],
       ["summary", streamConfig.summary],
       ["streaming", streamConfig.streaming],
-      ["starts", `${Math.floor(Date.now() / 1000)}`],
       ["status", status],
     ],
     content: "",
   };
+  if (streamConfig.starts) event.tags.push(["starts", streamConfig.starts]);
   if (streamConfig.image) event.tags.push(["image", streamConfig.image]);
   if (streamConfig.currentParticipants)
     event.tags.push(["current_participants", streamConfig.currentParticipants]);

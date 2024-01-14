@@ -151,6 +151,7 @@ export default function StreamManager() {
             ...prev,
             prevStatus: "ended",
             status: "live",
+            starts: `${Math.floor(Date.now() / 1000)}`,
           };
         });
       }
@@ -245,8 +246,8 @@ export default function StreamManager() {
       console.debug("firing live");
       publishLiveEvent(privkey, streamConfig, "live");
     } else if (
-      streamConfig.status === "ended" &&
-      streamConfig.prevStatus === "live"
+      streamConfig.prevStatus === "live" &&
+      streamConfig.status === "ended"
     ) {
       console.debug("firing ended");
       publishLiveEvent(privkey, streamConfig, "ended");
