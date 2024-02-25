@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Event as NostrEvent } from "nostr-tools";
 import { Pool } from "../Pool";
 import {
@@ -18,19 +18,20 @@ export const useInputQueue = (
     nowPlaying: null,
     queue: [],
   });
+  const [reconnect, setReconnect] = useState(false);
   // const [playlist, setPlaylist] = useState<InputAndAuthor[]>(
   //   Array(100).fill(testInput)
   // );
-  const now = useRef(Math.floor(Date.now() / 1000));
 
   useEffect(() => {
     if (!pubkey || !d || relays?.length == 0) return;
     console.debug("subscribing for inputs", pubkey, d, relays);
+    const now = Math.floor(Date.now() / 1000);
     let sub = Pool.sub(relays, [
       {
         kinds: [1311, 9735],
         "#a": [`30311:${pubkey}:${d}`],
-        since: now.current,
+        since: now,
       },
     ]);
 
@@ -108,7 +109,17 @@ export const useInputQueue = (
       // why did i add it ever?
       Pool.close(relays);
     };
-  }, [pubkey, d, JSON.stringify(relays)]);
+  }, [pubkey, d, JSON.stringify(relays), reconnect]);
+
+  // reconnect to relays and resubscribe
+  useEffect(() => {
+    const reconnectId = setInterval(() => {
+      setReconnect((prev) => !prev);
+    }, 1000 * 60 * 15); // 15 minutes
+    return () => {
+      clearInterval(reconnectId);
+    };
+  }, []);
 
   return { playlist, setPlaylist };
 };
